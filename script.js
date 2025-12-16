@@ -21,7 +21,7 @@ class ReadingCompanion {
             'e': 'eu',
             'f': 'fe',
             'g': 'gue',
-            'h': '',  // h is silent in French
+            'h': ' ',  // h is silent in French, use space
             'i': 'i',
             'j': 'je',
             'k': 'ke',
@@ -471,7 +471,7 @@ class ReadingCompanion {
         if (this.currentLanguage === 'fr') {
             const lowerText = text.toLowerCase().trim();
             // Check if we have a phonetic mapping for this text
-            if (this.frenchPhonetics.hasOwnProperty(lowerText)) {
+            if (lowerText in this.frenchPhonetics) {
                 speechText = this.frenchPhonetics[lowerText];
             }
         }
