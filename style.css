@@ -1,0 +1,353 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+h1 {
+    color: #667eea;
+    font-size: 2.5em;
+}
+
+h2 {
+    color: #764ba2;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.language-toggle {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-language {
+    padding: 12px 24px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-language:hover {
+    background: #667eea;
+    color: white;
+    transform: scale(1.05);
+}
+
+.btn-language.active {
+    background: #667eea;
+    color: white;
+}
+
+.flag {
+    font-size: 1.2em;
+}
+
+/* Display Area */
+.display-area {
+    background: #f0f4ff;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    min-height: 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.assembly-display {
+    flex: 1;
+    font-size: 2em;
+    color: #333;
+    min-height: 60px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+
+.letter-item {
+    display: inline-block;
+    padding: 5px 10px;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.letter-item:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-clear {
+    padding: 12px 24px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-clear:hover {
+    background: #ff5252;
+    transform: scale(1.05);
+}
+
+/* Keyboard Section */
+.keyboard-section {
+    margin-bottom: 30px;
+}
+
+.keyboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.key {
+    aspect-ratio: 1;
+    min-height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.5em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.key:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.key:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Syllables Section */
+.syllables-section {
+    margin-bottom: 30px;
+}
+
+.syllable-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+}
+
+.syllable-btn {
+    padding: 15px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.syllable-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.syllable-btn:active {
+    transform: translateY(0);
+}
+
+/* Word Bank */
+.words-section {
+    margin-bottom: 30px;
+}
+
+.word-bank {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.word-btn {
+    padding: 18px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.word-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.word-btn:active {
+    transform: translateY(0);
+}
+
+/* Story Section */
+.story-section {
+    margin-bottom: 20px;
+}
+
+.story-controls {
+    margin-bottom: 20px;
+}
+
+.story-select {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.story-select:focus {
+    outline: none;
+    border-color: #764ba2;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.story-display {
+    background: #f8f9ff;
+    border-radius: 15px;
+    padding: 25px;
+    min-height: 150px;
+    line-height: 2;
+    font-size: 1.3em;
+}
+
+.story-word {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 2px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.story-word:hover {
+    background: #667eea;
+    color: white;
+    transform: scale(1.05);
+}
+
+.story-word.playing {
+    background: #ffd93d;
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    .keyboard {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 8px;
+    }
+
+    .key {
+        min-height: 50px;
+        font-size: 1.2em;
+    }
+
+    .assembly-display {
+        font-size: 1.5em;
+    }
+
+    .story-display {
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    .keyboard {
+        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+        gap: 6px;
+    }
+
+    .key {
+        min-height: 45px;
+        font-size: 1em;
+    }
+}
