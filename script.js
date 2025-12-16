@@ -11,6 +11,138 @@ class ReadingCompanion {
         this.synth = window.speechSynthesis;
         this.voices = [];
         
+        // Phonetic pronunciation maps for French
+        this.frenchPhonetics = {
+            // Single letters - use phonetic sounds (not letter names) for reading instruction
+            'a': 'ah',
+            'b': 'be',
+            'c': 'ke',
+            'd': 'de',
+            'e': 'eu',
+            'f': 'fe',
+            'g': 'gue',
+            'h': ' ',  // h is silent in French, use space
+            'i': 'i',
+            'j': 'je',
+            'k': 'ke',
+            'l': 'le',
+            'm': 'me',
+            'n': 'ne',
+            'o': 'o',
+            'p': 'pe',
+            'q': 'ke',
+            'r': 're',
+            's': 'se',
+            't': 'te',
+            'u': 'u',
+            'v': 've',
+            'w': 've',
+            'x': 'xe',
+            'y': 'i',
+            'z': 'ze',
+            // Syllables - phonetic spellings to avoid abbreviation pronunciation
+            'ba': 'ba',
+            'be': 'bé',
+            'bi': 'bi',
+            'bo': 'bo',
+            'bu': 'bu',
+            'ca': 'ka',
+            'ce': 'se',
+            'ci': 'si',
+            'co': 'ko',
+            'cu': 'ku',
+            'da': 'da',
+            'de': 'de',
+            'di': 'di',
+            'do': 'do',
+            'du': 'du',
+            'fa': 'fa',
+            'fe': 'fé',
+            'fi': 'fi',
+            'fo': 'fo',
+            'fu': 'fu',
+            'ga': 'ga',
+            'ge': 'je',
+            'gi': 'ji',
+            'go': 'go',
+            'gu': 'gu',
+            'ha': 'a',
+            'he': 'e',
+            'hi': 'i',
+            'ho': 'o',
+            'hu': 'u',
+            'ja': 'ja',
+            'je': 'je',
+            'ji': 'ji',
+            'jo': 'jo',
+            'ju': 'ju',
+            'la': 'la',
+            'le': 'le',
+            'li': 'li',
+            'lo': 'lo',
+            'lu': 'lu',
+            'ma': 'ma',
+            'me': 'me',
+            'mi': 'mi',
+            'mo': 'mo',
+            'mu': 'mu',
+            'na': 'na',
+            'ne': 'ne',
+            'ni': 'ni',
+            'no': 'no',
+            'nu': 'nu',
+            'pa': 'pa',
+            'pe': 'pé',
+            'pi': 'pi',
+            'po': 'po',
+            'pu': 'pu',
+            'ra': 'ra',
+            're': 're',
+            'ri': 'ri',
+            'ro': 'ro',
+            'ru': 'ru',
+            'sa': 'sa',
+            'se': 'se',
+            'si': 'si',
+            'so': 'so',
+            'su': 'su',
+            'ta': 'ta',
+            'te': 'te',
+            'ti': 'ti',
+            'to': 'to',
+            'tu': 'tu',
+            'va': 'va',
+            've': 'vé',
+            'vi': 'vi',
+            'vo': 'vo',
+            'vu': 'vu',
+            'wa': 'oua',
+            'we': 'oué',
+            'wi': 'oui',
+            'wo': 'ouo',
+            'wu': 'ouu',
+            'za': 'za',
+            'ze': 'ze',
+            'zi': 'zi',
+            'zo': 'zo',
+            'zu': 'zu',
+            'cha': 'cha',
+            'che': 'che',
+            'chi': 'chi',
+            'cho': 'cho',
+            'chu': 'chu',
+            'on': 'on',
+            'an': 'an',
+            'en': 'en',
+            'in': 'in',
+            'un': 'un',
+            'ou': 'ou',
+            'au': 'o',
+            'eau': 'o',
+            'eu': 'eu',
+            'oi': 'oua'
+        };
+        
         // Language-specific data
         this.languageData = {
             en: {
@@ -334,7 +466,17 @@ class ReadingCompanion {
         // Cancel any ongoing speech
         this.synth.cancel();
         
-        const utterance = new SpeechSynthesisUtterance(text);
+        // Apply French phonetic mapping if in French mode
+        let speechText = text;
+        if (this.currentLanguage === 'fr') {
+            const lowerText = text.toLowerCase().trim();
+            // Check if we have a phonetic mapping for this text
+            if (lowerText in this.frenchPhonetics) {
+                speechText = this.frenchPhonetics[lowerText];
+            }
+        }
+        
+        const utterance = new SpeechSynthesisUtterance(speechText);
         utterance.lang = this.languageData[this.currentLanguage].voiceLang;
         utterance.rate = LEARNING_SPEECH_RATE;
         utterance.pitch = 1.0;
