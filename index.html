@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Companion</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reading Companion</h1>
+            <div class="language-toggle">
+                <button id="langBtn" class="btn-language" data-lang="en">
+                    <span class="flag">🇬🇧</span> English
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Display Area -->
+            <div class="display-area">
+                <div id="assemblyDisplay" class="assembly-display"></div>
+                <button id="clearBtn" class="btn-clear">Clear</button>
+            </div>
+
+            <!-- Alphabet Keyboard -->
+            <section class="keyboard-section">
+                <h2>Letters</h2>
+                <div id="letterKeyboard" class="keyboard"></div>
+            </section>
+
+            <!-- Common Syllables (for quick access) -->
+            <section class="syllables-section">
+                <h2>Common Syllables</h2>
+                <div id="syllableButtons" class="syllable-buttons"></div>
+            </section>
+
+            <!-- Word Bank -->
+            <section class="words-section">
+                <h2>Word Bank</h2>
+                <div id="wordBank" class="word-bank"></div>
+            </section>
+
+            <!-- Story Bank -->
+            <section class="story-section">
+                <h2>Story Bank</h2>
+                <div class="story-controls">
+                    <select id="storySelect" class="story-select">
+                        <option value="">Select a story...</option>
+                    </select>
+                </div>
+                <div id="storyDisplay" class="story-display"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
