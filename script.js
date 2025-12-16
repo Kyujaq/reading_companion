@@ -1,4 +1,9 @@
 // Reading Companion - Main Script
+
+// Configuration constants
+const MAX_DISPLAYED_SYLLABLES = 30;
+const LEARNING_SPEECH_RATE = 0.8;
+
 class ReadingCompanion {
     constructor() {
         this.currentLanguage = 'en';
@@ -39,7 +44,7 @@ class ReadingCompanion {
                 voiceLang: 'en-US'
             },
             fr: {
-                letters: 'abcdefghijklmnopqrstuvwxyzàâäéèêëïîôùûüÿæœç'.split('').filter(l => l),
+                letters: 'abcdefghijklmnopqrstuvwxyzàâäéèêëïîôùûüÿæœç'.split(''),
                 syllables: ['ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ce', 'ci', 'co', 'cu',
                            'da', 'de', 'di', 'do', 'du', 'fa', 'fe', 'fi', 'fo', 'fu',
                            'ga', 'ge', 'gi', 'go', 'gu', 'ha', 'he', 'hi', 'ho', 'hu',
@@ -185,7 +190,7 @@ class ReadingCompanion {
         const syllableContainer = document.getElementById('syllableButtons');
         syllableContainer.innerHTML = '';
         
-        const syllables = this.languageData[this.currentLanguage].syllables.slice(0, 30);
+        const syllables = this.languageData[this.currentLanguage].syllables.slice(0, MAX_DISPLAYED_SYLLABLES);
         
         syllables.forEach(syllable => {
             const btn = document.createElement('button');
@@ -331,7 +336,7 @@ class ReadingCompanion {
         
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = this.languageData[this.currentLanguage].voiceLang;
-        utterance.rate = 0.8; // Slightly slower for learning
+        utterance.rate = LEARNING_SPEECH_RATE;
         utterance.pitch = 1.0;
         
         // Try to find a voice for the current language
