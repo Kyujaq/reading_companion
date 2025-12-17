@@ -6,14 +6,20 @@ const LEARNING_SPEECH_RATE = 0.8;
 
 class ReadingCompanion {
     constructor() {
-        this.currentLanguage = 'en';
+        this.currentLanguage = 'fr';
         this.assemblyText = [];
         this.synth = window.speechSynthesis;
         this.voices = [];
         
-        // Phonetic pronunciation maps for French
-        this.frenchPhonetics = {
-            // Single letters - use phonetic sounds (not letter names) for reading instruction
+        // Define vowels for both languages
+        this.vowels = {
+            en: ['a', 'e', 'i', 'o', 'u'],
+            fr: ['a', 'e', 'i', 'o', 'u', 'y', 'à', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'ï', 'î', 'ô', 'ù', 'û', 'ü', 'ÿ', 'æ', 'œ']
+        };
+        
+        // Phonics pronunciation maps for French
+        this.frenchPhonics = {
+            // Single letters - use phonic sounds (not letter names) for reading instruction
             'a': 'ah',
             'b': 'be',
             'c': 'ke',
@@ -40,7 +46,7 @@ class ReadingCompanion {
             'x': 'xe',
             'y': 'i',
             'z': 'ze',
-            // Syllables - phonetic spellings to avoid abbreviation pronunciation
+            // Syllables - phonic spellings to avoid abbreviation pronunciation
             'ba': 'ba',
             'be': 'bé',
             'bi': 'bi',
@@ -302,10 +308,12 @@ class ReadingCompanion {
         keyboard.innerHTML = '';
         
         const letters = this.languageData[this.currentLanguage].letters;
+        const vowelsList = this.vowels[this.currentLanguage];
         
         letters.forEach(letter => {
             const key = document.createElement('button');
-            key.className = 'key';
+            const isVowel = vowelsList.includes(letter.toLowerCase());
+            key.className = isVowel ? 'key vowel' : 'key consonant';
             key.textContent = letter;
             key.setAttribute('data-letter', letter);
             
@@ -466,13 +474,13 @@ class ReadingCompanion {
         // Cancel any ongoing speech
         this.synth.cancel();
         
-        // Apply French phonetic mapping if in French mode
+        // Apply French phonics mapping if in French mode
         let speechText = text;
         if (this.currentLanguage === 'fr') {
             const lowerText = text.toLowerCase().trim();
-            // Check if we have a phonetic mapping for this text
-            if (lowerText in this.frenchPhonetics) {
-                speechText = this.frenchPhonetics[lowerText];
+            // Check if we have a phonic mapping for this text
+            if (lowerText in this.frenchPhonics) {
+                speechText = this.frenchPhonics[lowerText];
             }
         }
         

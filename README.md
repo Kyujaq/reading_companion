@@ -35,7 +35,7 @@ An interactive web-based tool designed to help children learn to read in both En
 
 ### 🌍 Bilingual Support
 - Switch between English and French with one click
-- Language-specific phonetics and pronunciation
+- Language-specific phonics and pronunciation
 - Separate content for each language
 
 ### 📱 Touch & Keyboard Friendly
