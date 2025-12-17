@@ -163,6 +163,14 @@ h2 {
     touch-action: manipulation;
 }
 
+.key.vowel {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.key.consonant {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
 .key:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
