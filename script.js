@@ -14,7 +14,7 @@ class ReadingCompanion {
         // Define vowels for both languages
         this.vowels = {
             en: ['a', 'e', 'i', 'o', 'u'],
-            fr: ['a', 'e', 'i', 'o', 'u', 'y', 'à', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'ï', 'î', 'ô', 'ù', 'û', 'ü', 'ÿ']
+            fr: ['a', 'e', 'i', 'o', 'u', 'y', 'à', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'ï', 'î', 'ô', 'ù', 'û', 'ü', 'ÿ', 'æ', 'œ']
         };
         
         // Phonics pronunciation maps for French
