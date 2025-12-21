@@ -75,41 +75,104 @@ h2 {
     font-size: 1.2em;
 }
 
-/* Display Area */
-.display-area {
+/* Syllable Builder Section */
+.syllable-builder-section {
+    margin-bottom: 30px;
+}
+
+.syllable-builder {
+    display: grid;
+    grid-template-columns: 1fr 150px 150px 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: start;
+}
+
+.consonants-column,
+.vowels-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.keyboard-column {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 8px;
+}
+
+.builder-box-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.builder-box {
+    width: 150px;
+    height: 150px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4em;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s;
+}
+
+.pink-box {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+}
+
+.blue-box {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.builder-box.filled {
+    animation: fillPulse 0.3s ease-out;
+}
+
+@keyframes fillPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* History Container */
+.history-container {
     background: #f0f4ff;
     border-radius: 15px;
-    padding: 30px;
-    margin-bottom: 30px;
-    min-height: 100px;
+    padding: 20px;
+    min-height: 80px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 20px;
 }
 
-.assembly-display {
+.history-display {
     flex: 1;
-    font-size: 2em;
+    font-size: 1.8em;
     color: #333;
-    min-height: 60px;
+    min-height: 50px;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 8px;
     align-items: center;
 }
 
-.letter-item {
+.history-item {
     display: inline-block;
-    padding: 5px 10px;
+    padding: 8px 16px;
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
 }
 
-.letter-item:hover {
+.history-item:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
@@ -131,17 +194,7 @@ h2 {
     transform: scale(1.05);
 }
 
-/* Keyboard Section */
-.keyboard-section {
-    margin-bottom: 30px;
-}
 
-.keyboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-}
 
 .key {
     aspect-ratio: 1;
@@ -325,7 +378,18 @@ h2 {
         font-size: 2em;
     }
 
-    .keyboard {
+    .syllable-builder {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .builder-box {
+        width: 120px;
+        height: 120px;
+        font-size: 3em;
+    }
+
+    .keyboard-column {
         grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
         gap: 8px;
     }
@@ -335,7 +399,7 @@ h2 {
         font-size: 1.2em;
     }
 
-    .assembly-display {
+    .history-display {
         font-size: 1.5em;
     }
 
@@ -349,7 +413,13 @@ h2 {
         font-size: 1.5em;
     }
 
-    .keyboard {
+    .builder-box {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5em;
+    }
+
+    .keyboard-column {
         grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
         gap: 6px;
     }

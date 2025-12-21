@@ -18,16 +18,36 @@
         </header>
 
         <main>
-            <!-- Display Area -->
-            <div class="display-area">
-                <div id="assemblyDisplay" class="assembly-display"></div>
-                <button id="clearBtn" class="btn-clear">Clear</button>
-            </div>
-
-            <!-- Alphabet Keyboard -->
-            <section class="keyboard-section">
-                <h2>Letters</h2>
-                <div id="letterKeyboard" class="keyboard"></div>
+            <!-- Syllable Builder -->
+            <section class="syllable-builder-section">
+                <h2>Letters & Syllables</h2>
+                <div class="syllable-builder">
+                    <!-- Consonants Column -->
+                    <div class="consonants-column">
+                        <div id="consonantKeyboard" class="keyboard-column"></div>
+                    </div>
+                    
+                    <!-- Pink Box (Consonant) -->
+                    <div class="builder-box-container">
+                        <div id="consonantBox" class="builder-box pink-box"></div>
+                    </div>
+                    
+                    <!-- Blue Box (Vowel) -->
+                    <div class="builder-box-container">
+                        <div id="vowelBox" class="builder-box blue-box"></div>
+                    </div>
+                    
+                    <!-- Vowels Column -->
+                    <div class="vowels-column">
+                        <div id="vowelKeyboard" class="keyboard-column"></div>
+                    </div>
+                </div>
+                
+                <!-- History Box -->
+                <div class="history-container">
+                    <div id="historyDisplay" class="history-display"></div>
+                    <button id="clearBtn" class="btn-clear">Clear</button>
+                </div>
             </section>
 
             <!-- Common Syllables (for quick access) -->
