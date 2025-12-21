@@ -50,6 +50,9 @@ class ReadingCompanion {
             // Letters that use s sound
             's': ['s sound.wav'],
             'x': ['s sound.wav'],
+            // Special characters
+            'ç': ['s sound.wav'], // c with cedilla sounds like s
+            'æ': ['e.wav'], // ae ligature sounds like e
             // Accented vowels
             'à': ['a.wav'],
             'â': ['a.wav'],
