@@ -11,10 +11,33 @@ class ReadingCompanion {
         this.voices = [];
         this.audioContext = null;
         
+        // New state for syllable builder
+        this.consonantBox = '';
+        this.vowelBox = '';
+        this.syllableHistory = [];
+        
         // Define vowels for both languages
         this.vowels = {
             en: ['a', 'e', 'i', 'o', 'u'],
             fr: ['a', 'e', 'i', 'o', 'u', 'y', 'à', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'ï', 'î', 'ô', 'ù', 'û', 'ü', 'ÿ', 'æ', 'œ']
+        };
+        
+        // Define complex vowel sounds (digraphs and special combinations)
+        this.complexVowels = {
+            fr: ['ou', 'où', 'oû', 'au', 'eau', 'ai', 'ei', 'oi', 'oe', 'œ', 'an', 'am', 'en', 'em', 'in', 'im', 'ain', 'ein', 'un', 'on', 'yn', 'ym', 'io', 'ien', 'ienne', 'er', 'et', 'ez'],
+            en: ['ou', 'au', 'ai', 'ei', 'oi', 'oo', 'ee', 'ea']
+        };
+        
+        // Define consonants (letters that are not vowels)
+        this.consonants = {
+            en: ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'],
+            fr: ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'z', 'ç']
+        };
+        
+        // Define consonant digraphs
+        this.consonantDigraphs = {
+            fr: ['ch', 'gn'],
+            en: ['ch', 'sh', 'th', 'ph', 'wh']
         };
         
         // Map French letters/sounds to audio files
@@ -322,7 +345,7 @@ class ReadingCompanion {
         this.setupEventListeners();
         
         // Render initial UI
-        this.renderKeyboard();
+        this.renderSyllableBuilder();
         this.renderSyllables();
         this.renderWordBank();
         this.renderStorySelect();
@@ -343,7 +366,7 @@ class ReadingCompanion {
 
         // Clear button
         document.getElementById('clearBtn').addEventListener('click', () => {
-            this.clearAssembly();
+            this.clearSyllableBuilder();
         });
 
         // Story select
@@ -355,24 +378,18 @@ class ReadingCompanion {
     setupKeyboardInput() {
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            const letters = this.languageData[this.currentLanguage].letters;
+            const consonantsList = this.consonants[this.currentLanguage];
+            const vowelsList = this.vowels[this.currentLanguage];
             
-            if (letters.includes(key)) {
+            if (consonantsList.includes(key)) {
                 e.preventDefault();
-                this.addToAssembly(key);
-                this.playSound(key);
-            } else if (e.key === 'Backspace') {
+                this.handleConsonantClick(key);
+            } else if (vowelsList.includes(key)) {
                 e.preventDefault();
-                this.removeLastLetter();
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                this.playAssembledText();
+                this.handleVowelClick(key);
             } else if (e.key === 'Escape') {
                 e.preventDefault();
-                this.clearAssembly();
-            } else if (e.key === ' ') {
-                e.preventDefault();
-                this.addSpace();
+                this.clearSyllableBuilder();
             }
         });
     }
@@ -390,34 +407,143 @@ class ReadingCompanion {
         langBtn.classList.add('active');
         
         // Re-render UI for new language
-        this.renderKeyboard();
+        this.renderSyllableBuilder();
         this.renderSyllables();
         this.renderWordBank();
         this.renderStorySelect();
-        this.clearAssembly();
+        this.clearSyllableBuilder();
     }
 
-    renderKeyboard() {
-        const keyboard = document.getElementById('letterKeyboard');
-        keyboard.innerHTML = '';
+    renderSyllableBuilder() {
+        const consonantKeyboard = document.getElementById('consonantKeyboard');
+        const vowelKeyboard = document.getElementById('vowelKeyboard');
         
-        const letters = this.languageData[this.currentLanguage].letters;
+        consonantKeyboard.innerHTML = '';
+        vowelKeyboard.innerHTML = '';
+        
+        const consonantsList = this.consonants[this.currentLanguage];
+        const consonantDigraphsList = this.consonantDigraphs[this.currentLanguage] || [];
         const vowelsList = this.vowels[this.currentLanguage];
+        const complexVowelsList = this.complexVowels[this.currentLanguage] || [];
         
-        letters.forEach(letter => {
+        // Render consonants (including digraphs)
+        [...consonantsList, ...consonantDigraphsList].forEach(consonant => {
             const key = document.createElement('button');
-            const isVowel = vowelsList.includes(letter.toLowerCase());
-            key.className = isVowel ? 'key vowel' : 'key consonant';
-            key.textContent = letter;
-            key.setAttribute('data-letter', letter);
+            key.className = 'key consonant';
+            key.textContent = consonant;
+            key.setAttribute('data-letter', consonant);
             
             key.addEventListener('click', () => {
-                this.addToAssembly(letter);
-                this.playSound(letter);
+                this.handleConsonantClick(consonant);
             });
             
-            keyboard.appendChild(key);
+            consonantKeyboard.appendChild(key);
         });
+        
+        // Render vowels (simple vowels first, then complex vowels)
+        [...vowelsList, ...complexVowelsList].forEach(vowel => {
+            const key = document.createElement('button');
+            key.className = 'key vowel';
+            key.textContent = vowel;
+            key.setAttribute('data-letter', vowel);
+            
+            key.addEventListener('click', () => {
+                this.handleVowelClick(vowel);
+            });
+            
+            vowelKeyboard.appendChild(key);
+        });
+    }
+    
+    handleConsonantClick(consonant) {
+        // Special case: Q writes "Qu" in the box but still shows Q on button
+        const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
+        this.consonantBox = boxText;
+        this.updateBuilderBoxes();
+        this.playSound(consonant);
+        this.checkAndCompleteSyllable();
+    }
+    
+    handleVowelClick(vowel) {
+        this.vowelBox = vowel;
+        this.updateBuilderBoxes();
+        this.playSound(vowel);
+        this.checkAndCompleteSyllable();
+    }
+    
+    updateBuilderBoxes() {
+        const consonantBoxEl = document.getElementById('consonantBox');
+        const vowelBoxEl = document.getElementById('vowelBox');
+        
+        consonantBoxEl.textContent = this.consonantBox;
+        vowelBoxEl.textContent = this.vowelBox;
+        
+        // Add filled class for animation
+        if (this.consonantBox) {
+            consonantBoxEl.classList.add('filled');
+            setTimeout(() => consonantBoxEl.classList.remove('filled'), 300);
+        }
+        if (this.vowelBox) {
+            vowelBoxEl.classList.add('filled');
+            setTimeout(() => vowelBoxEl.classList.remove('filled'), 300);
+        }
+    }
+    
+    checkAndCompleteSyllable() {
+        // If both boxes are filled, read the syllable and move to history
+        if (this.consonantBox && this.vowelBox) {
+            const syllable = this.consonantBox + this.vowelBox;
+            
+            // Small delay to let user see the complete syllable (reduced from 300ms to 100ms)
+            setTimeout(() => {
+                // Read the syllable (not spell it) - with a short timeout
+                // If audio takes too long, we'll move to history anyway
+                const timeoutId = setTimeout(() => {
+                    // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
+                    this.syllableHistory.push(syllable);
+                    this.consonantBox = '';
+                    this.vowelBox = '';
+                    this.updateBuilderBoxes();
+                    this.updateHistoryDisplay();
+                }, 2000);
+                
+                this.playSound(syllable, () => {
+                    // Clear the fallback timeout since audio completed
+                    clearTimeout(timeoutId);
+                    // After reading, move to history and clear boxes
+                    this.syllableHistory.push(syllable);
+                    this.consonantBox = '';
+                    this.vowelBox = '';
+                    this.updateBuilderBoxes();
+                    this.updateHistoryDisplay();
+                });
+            }, 100);
+        }
+    }
+    
+    updateHistoryDisplay() {
+        const historyDisplay = document.getElementById('historyDisplay');
+        historyDisplay.innerHTML = '';
+        
+        this.syllableHistory.forEach((syllable, index) => {
+            const span = document.createElement('span');
+            span.className = 'history-item';
+            span.textContent = syllable;
+            
+            span.addEventListener('click', () => {
+                this.playSound(syllable);
+            });
+            
+            historyDisplay.appendChild(span);
+        });
+    }
+    
+    clearSyllableBuilder() {
+        this.consonantBox = '';
+        this.vowelBox = '';
+        this.syllableHistory = [];
+        this.updateBuilderBoxes();
+        this.updateHistoryDisplay();
     }
 
     renderSyllables() {
@@ -514,56 +640,6 @@ class ReadingCompanion {
         });
     }
 
-    addToAssembly(text) {
-        this.assemblyText.push(text);
-        this.updateDisplay();
-    }
-
-    addSpace() {
-        this.assemblyText.push(' ');
-        this.updateDisplay();
-    }
-
-    removeLastLetter() {
-        if (this.assemblyText.length > 0) {
-            this.assemblyText.pop();
-            this.updateDisplay();
-        }
-    }
-
-    clearAssembly() {
-        this.assemblyText = [];
-        this.updateDisplay();
-    }
-
-    updateDisplay() {
-        const display = document.getElementById('assemblyDisplay');
-        display.innerHTML = '';
-        
-        this.assemblyText.forEach((item, index) => {
-            if (item === ' ') {
-                display.appendChild(document.createTextNode(' '));
-            } else {
-                const span = document.createElement('span');
-                span.className = 'letter-item';
-                span.textContent = item;
-                
-                span.addEventListener('click', () => {
-                    this.playSound(item);
-                });
-                
-                display.appendChild(span);
-            }
-        });
-    }
-
-    playAssembledText() {
-        if (this.assemblyText.length > 0) {
-            const text = this.assemblyText.join('');
-            this.playSound(text);
-        }
-    }
-
     playSound(text, callback) {
         // For French, use audio files instead of TTS
         if (this.currentLanguage === 'fr') {
@@ -588,7 +664,13 @@ class ReadingCompanion {
             }
             
             // Play audio files with delay for multiple sounds
-            await this.playAudioSequence(audioFiles, callback);
+            try {
+                await this.playAudioSequence(audioFiles, callback);
+            } catch (error) {
+                // If audio fails, fallback to TTS or just execute callback
+                console.log('Audio playback failed, falling back to TTS');
+                this.playTTS(text, callback);
+            }
         } else {
             // Fallback to TTS if no audio file available
             this.playTTS(text, callback);
@@ -596,16 +678,22 @@ class ReadingCompanion {
     }
 
     async playAudioSequence(audioFiles, callback) {
-        for (let i = 0; i < audioFiles.length; i++) {
-            await this.playAudioFile(audioFiles[i]);
-            
-            // Wait 1 second between sounds for multi-sound letters
-            if (i < audioFiles.length - 1) {
-                await this.sleep(1000);
+        try {
+            for (let i = 0; i < audioFiles.length; i++) {
+                await this.playAudioFile(audioFiles[i]);
+                
+                // Wait 1 second between sounds for multi-sound letters
+                if (i < audioFiles.length - 1) {
+                    await this.sleep(1000);
+                }
             }
+            
+            if (callback) callback();
+        } catch (error) {
+            // Ensure callback is called even if audio fails
+            console.error('Error in audio sequence:', error);
+            if (callback) callback();
         }
-        
-        if (callback) callback();
     }
 
     playAudioFile(filename) {
