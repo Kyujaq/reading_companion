@@ -1,7 +1,7 @@
 // Reading Companion - Main Script
 
 // Configuration constants
-const MAX_DISPLAYED_SYLLABLES = 30;
+const MAX_DISPLAYED_SYLLABLES = 100;
 const LEARNING_SPEECH_RATE = 0.8;
 
 class ReadingCompanion {
@@ -10,11 +10,93 @@ class ReadingCompanion {
         this.assemblyText = [];
         this.synth = window.speechSynthesis;
         this.voices = [];
+        this.audioContext = null;
         
         // Define vowels for both languages
         this.vowels = {
             en: ['a', 'e', 'i', 'o', 'u'],
             fr: ['a', 'e', 'i', 'o', 'u', 'y', 'à', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'ï', 'î', 'ô', 'ù', 'û', 'ü', 'ÿ', 'æ', 'œ']
+        };
+        
+        // Map French letters/sounds to audio files
+        this.frenchAudioMap = {
+            // Single letters with single sounds
+            'a': ['a.wav'],
+            'b': ['b.wav'],
+            'd': ['d sound.wav'],
+            'e': ['e.wav'],
+            'f': ['f sound second version.wav'],
+            'g': ['g sound.wav'],
+            'h': null, // h is silent
+            'i': ['i.wav'],
+            'j': ['j sound.wav'],
+            'l': ['l sound.wav'],
+            'm': ['m.wav'],
+            'n': ['n.wav'],
+            'o': ['o.wav'],
+            'p': ['p sound.wav'],
+            'r': ['r sound.wav'],
+            't': ['t sound.wav'],
+            'u': ['u.wav'],
+            'v': ['v sound.mp3'],
+            'w': ['w sound.mp3'],
+            'y': ['y.wav'],
+            'z': ['z sound 1.mp3'],
+            // Letters with multiple sounds - play both with delay
+            'c': ['s sound.wav', 'c sound.wav'],
+            // Letters that use c sound
+            'k': ['c sound.wav'],
+            'q': ['c sound.wav'],
+            // Letters that use s sound
+            's': ['s sound.wav'],
+            'x': ['s sound.wav'],
+            // Accented vowels
+            'à': ['a.wav'],
+            'â': ['a.wav'],
+            'ä': ['a.wav'],
+            'é': ['é.wav'],
+            'è': ['è.wav'],
+            'ê': ['ê.wav'],
+            'ë': ['ë.wav'],
+            'ï': ['i.wav'],
+            'î': ['i.wav'],
+            'ô': ['ô.wav'],
+            'ù': ['u.wav'],
+            'û': ['u.wav'],
+            'ü': ['u.wav'],
+            'ÿ': ['y.wav'],
+            // Digraphs and syllables
+            'ch': ['ch.wav'],
+            'gn': ['gn.wav'],
+            'ai': ['ai.wav'],
+            'au': ['au.wav'],
+            'eau': ['eau.wav'],
+            'ei': ['ei.wav'],
+            'oi': ['oi.wav'],
+            'ou': ['ou.wav'],
+            'où': ['où.wav'],
+            'oû': ['oû.wav'],
+            'oe': ['oe.wav'],
+            'œ': ['oe.wav'],
+            'er': ['er.wav'],
+            'et': ['et.wav'],
+            'ez': ['ez.wav'],
+            // Nasal vowels - combine similar ones
+            'an': ['an.wav'],
+            'am': ['an.wav'], // same sound as an
+            'en': ['en.wav'],
+            'em': ['en.wav'], // same sound as en
+            'in': ['in.wav'],
+            'im': ['in.wav'], // same sound as in
+            'ain': ['ain.wav'],
+            'ein': ['ain.wav'], // same sound as ain
+            'un': ['un.wav'],
+            'on': ['on.wav'],
+            'yn': ['in.wav'], // same as in
+            'ym': ['in.wav'], // same as in
+            'io': ['io.wav'],
+            'ien': ['ien.wav'],
+            'ienne': ['ienne.wav']
         };
         
         // Phonics pronunciation maps for French
@@ -183,16 +265,26 @@ class ReadingCompanion {
             },
             fr: {
                 letters: 'abcdefghijklmnopqrstuvwxyzàâäéèêëïîôùûüÿæœç'.split(''),
-                syllables: ['ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ce', 'ci', 'co', 'cu',
-                           'da', 'de', 'di', 'do', 'du', 'fa', 'fe', 'fi', 'fo', 'fu',
-                           'ga', 'ge', 'gi', 'go', 'gu', 'ha', 'he', 'hi', 'ho', 'hu',
-                           'ja', 'je', 'ji', 'jo', 'ju', 'la', 'le', 'li', 'lo', 'lu',
-                           'ma', 'me', 'mi', 'mo', 'mu', 'na', 'ne', 'ni', 'no', 'nu',
-                           'pa', 'pe', 'pi', 'po', 'pu', 'ra', 're', 'ri', 'ro', 'ru',
-                           'sa', 'se', 'si', 'so', 'su', 'ta', 'te', 'ti', 'to', 'tu',
-                           'va', 've', 'vi', 'vo', 'vu', 'wa', 'we', 'wi', 'wo', 'wu',
-                           'za', 'ze', 'zi', 'zo', 'zu', 'cha', 'che', 'chi', 'cho', 'chu',
-                           'on', 'an', 'en', 'in', 'un', 'ou', 'au', 'eau', 'eu', 'oi'],
+                syllables: [
+                    // Common consonant-vowel syllables
+                    'ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ce', 'ci', 'co', 'cu',
+                    'da', 'de', 'di', 'do', 'du', 'fa', 'fe', 'fi', 'fo', 'fu',
+                    'ga', 'ge', 'gi', 'go', 'gu', 'ha', 'he', 'hi', 'ho', 'hu',
+                    'ja', 'je', 'ji', 'jo', 'ju', 'la', 'le', 'li', 'lo', 'lu',
+                    'ma', 'me', 'mi', 'mo', 'mu', 'na', 'ne', 'ni', 'no', 'nu',
+                    'pa', 'pe', 'pi', 'po', 'pu', 'ra', 're', 'ri', 'ro', 'ru',
+                    'sa', 'se', 'si', 'so', 'su', 'ta', 'te', 'ti', 'to', 'tu',
+                    'va', 've', 'vi', 'vo', 'vu', 'wa', 'we', 'wi', 'wo', 'wu',
+                    'za', 'ze', 'zi', 'zo', 'zu',
+                    // Digraphs
+                    'ch', 'gn',
+                    // Vowel combinations
+                    'ai', 'au', 'eau', 'ei', 'oi', 'ou', 'oe',
+                    // Nasal vowels (combined similar sounds)
+                    'an', 'en', 'in', 'ain', 'on', 'un',
+                    // Special combinations
+                    'er', 'et', 'ez', 'io', 'ien', 'ienne'
+                ],
                 words: ['chat', 'chien', 'maison', 'soleil', 'lune', 'étoile', 'arbre',
                        'livre', 'stylo', 'tasse', 'balle', 'poisson', 'oiseau', 'main',
                        'pied', 'tête', 'nez', 'yeux', 'oreille', 'bébé', 'maman', 'papa', 'école'],
@@ -330,7 +422,7 @@ class ReadingCompanion {
         const syllableContainer = document.getElementById('syllableButtons');
         syllableContainer.innerHTML = '';
         
-        const syllables = this.languageData[this.currentLanguage].syllables.slice(0, MAX_DISPLAYED_SYLLABLES);
+        const syllables = this.languageData[this.currentLanguage].syllables;
         
         syllables.forEach(syllable => {
             const btn = document.createElement('button');
@@ -471,6 +563,71 @@ class ReadingCompanion {
     }
 
     playSound(text, callback) {
+        // For French, use audio files instead of TTS
+        if (this.currentLanguage === 'fr') {
+            this.playFrenchAudio(text, callback);
+        } else {
+            // Use TTS for English
+            this.playTTS(text, callback);
+        }
+    }
+
+    async playFrenchAudio(text, callback) {
+        const lowerText = text.toLowerCase().trim();
+        
+        // Check if we have audio files for this text
+        if (lowerText in this.frenchAudioMap) {
+            const audioFiles = this.frenchAudioMap[lowerText];
+            
+            // Handle silent h
+            if (audioFiles === null) {
+                if (callback) callback();
+                return;
+            }
+            
+            // Play audio files with delay for multiple sounds
+            await this.playAudioSequence(audioFiles, callback);
+        } else {
+            // Fallback to TTS if no audio file available
+            this.playTTS(text, callback);
+        }
+    }
+
+    async playAudioSequence(audioFiles, callback) {
+        for (let i = 0; i < audioFiles.length; i++) {
+            await this.playAudioFile(audioFiles[i]);
+            
+            // Wait 1 second between sounds for multi-sound letters
+            if (i < audioFiles.length - 1) {
+                await this.sleep(1000);
+            }
+        }
+        
+        if (callback) callback();
+    }
+
+    playAudioFile(filename) {
+        return new Promise((resolve, reject) => {
+            const audio = new Audio(`phonetic/${filename}`);
+            
+            audio.onended = () => resolve();
+            audio.onerror = (e) => {
+                console.error(`Error playing audio file: ${filename}`, e);
+                reject(e);
+            };
+            
+            audio.play().catch(e => {
+                console.error(`Failed to play: ${filename}`, e);
+                reject(e);
+            });
+        });
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    playTTS(text, callback) {
         // Cancel any ongoing speech
         this.synth.cancel();
         
