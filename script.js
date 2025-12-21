@@ -1,7 +1,6 @@
 // Reading Companion - Main Script
 
 // Configuration constants
-const MAX_DISPLAYED_SYLLABLES = 100;
 const LEARNING_SPEECH_RATE = 0.8;
 
 class ReadingCompanion {
@@ -27,7 +26,7 @@ class ReadingCompanion {
             'e': ['e.wav'],
             'f': ['f sound second version.wav'],
             'g': ['g sound.wav'],
-            'h': null, // h is silent
+            'h': [], // h is silent
             'i': ['i.wav'],
             'j': ['j sound.wav'],
             'l': ['l sound.wav'],
@@ -582,8 +581,8 @@ class ReadingCompanion {
         if (lowerText in this.frenchAudioMap) {
             const audioFiles = this.frenchAudioMap[lowerText];
             
-            // Handle silent h
-            if (audioFiles === null) {
+            // Handle silent letters (empty array)
+            if (audioFiles.length === 0) {
                 if (callback) callback();
                 return;
             }
@@ -611,16 +610,17 @@ class ReadingCompanion {
 
     playAudioFile(filename) {
         return new Promise((resolve, reject) => {
-            const audio = new Audio(`phonetic/${filename}`);
+            const audioPath = `phonetic/${filename}`;
+            const audio = new Audio(audioPath);
             
             audio.onended = () => resolve();
             audio.onerror = (e) => {
-                console.error(`Error playing audio file: ${filename}`, e);
+                console.error(`Error loading audio file: ${audioPath}. Please check if the file exists in the phonetic directory.`, e);
                 reject(e);
             };
             
             audio.play().catch(e => {
-                console.error(`Failed to play: ${filename}`, e);
+                console.error(`Failed to play audio file: ${audioPath}. This may be due to browser autoplay policies or missing file.`, e);
                 reject(e);
             });
         });
