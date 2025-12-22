@@ -369,6 +369,11 @@ class ReadingCompanion {
             this.clearSyllableBuilder();
         });
 
+        // Play button
+        document.getElementById('playBtn').addEventListener('click', () => {
+            this.playDetectedWords();
+        });
+
         // Story select
         document.getElementById('storySelect').addEventListener('change', (e) => {
             this.displayStory(e.target.value);
@@ -638,6 +643,82 @@ class ReadingCompanion {
         this.playSound(word, () => {
             element.classList.remove('playing');
         });
+    }
+
+    playDetectedWords() {
+        // Check if there's anything in the history
+        if (this.syllableHistory.length === 0) {
+            return;
+        }
+        
+        // Concatenate all syllables in history to form potential words
+        const historyText = this.syllableHistory.join('').toLowerCase();
+        
+        // Get the word bank for the current language
+        const wordBank = this.languageData[this.currentLanguage].words;
+        
+        // Find matching words
+        const detectedWords = [];
+        
+        // Try to detect words by checking if the history text matches or contains words from the word bank
+        // We'll check for exact matches and partial matches
+        for (const word of wordBank) {
+            if (historyText === word.toLowerCase()) {
+                // Exact match
+                detectedWords.push({
+                    word: word,
+                    startIndex: 0,
+                    endIndex: this.syllableHistory.length
+                });
+                break; // If we found an exact match, no need to check further
+            }
+        }
+        
+        // If no exact match, try to find words within the history
+        if (detectedWords.length === 0) {
+            for (const word of wordBank) {
+                if (historyText.includes(word.toLowerCase())) {
+                    detectedWords.push({
+                        word: word,
+                        partial: true
+                    });
+                }
+            }
+        }
+        
+        // Play the detected words
+        if (detectedWords.length > 0) {
+            this.playDetectedWordSequence(detectedWords);
+        } else {
+            // No words detected, just play the history as is
+            this.playSound(historyText);
+        }
+    }
+    
+    async playDetectedWordSequence(detectedWords) {
+        // Visual feedback - highlight the history items
+        const historyItems = document.querySelectorAll('.history-item');
+        historyItems.forEach(item => item.classList.add('playing'));
+        
+        for (let i = 0; i < detectedWords.length; i++) {
+            const wordInfo = detectedWords[i];
+            await new Promise(resolve => {
+                // Ensure resolve is called even if playSound doesn't execute callback
+                const timeout = setTimeout(resolve, 5000);
+                this.playSound(wordInfo.word, () => {
+                    clearTimeout(timeout);
+                    resolve();
+                });
+            });
+            
+            // Small delay between words
+            if (i < detectedWords.length - 1) {
+                await this.sleep(500);
+            }
+        }
+        
+        // Remove visual feedback
+        historyItems.forEach(item => item.classList.remove('playing'));
     }
 
     playSound(text, callback) {
