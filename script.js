@@ -465,15 +465,19 @@ class ReadingCompanion {
         const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
         this.consonantBox = boxText;
         this.updateBuilderBoxes();
-        this.playSound(consonant);
-        this.checkAndCompleteSyllable();
+        // Wait for the consonant sound to finish before checking for complete syllable
+        this.playSound(consonant, () => {
+            this.checkAndCompleteSyllable();
+        });
     }
     
     handleVowelClick(vowel) {
         this.vowelBox = vowel;
         this.updateBuilderBoxes();
-        this.playSound(vowel);
-        this.checkAndCompleteSyllable();
+        // Wait for the vowel sound to finish before checking for complete syllable
+        this.playSound(vowel, () => {
+            this.checkAndCompleteSyllable();
+        });
     }
     
     updateBuilderBoxes() {
@@ -499,30 +503,27 @@ class ReadingCompanion {
         if (this.consonantBox && this.vowelBox) {
             const syllable = this.consonantBox + this.vowelBox;
             
-            // Small delay to let user see the complete syllable (reduced from 300ms to 100ms)
-            setTimeout(() => {
-                // Read the syllable (not spell it) - with a short timeout
-                // If audio takes too long, we'll move to history anyway
-                const timeoutId = setTimeout(() => {
-                    // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
-                    this.syllableHistory.push(syllable);
-                    this.consonantBox = '';
-                    this.vowelBox = '';
-                    this.updateBuilderBoxes();
-                    this.updateHistoryDisplay();
-                }, 2000);
-                
-                this.playSound(syllable, () => {
-                    // Clear the fallback timeout since audio completed
-                    clearTimeout(timeoutId);
-                    // After reading, move to history and clear boxes
-                    this.syllableHistory.push(syllable);
-                    this.consonantBox = '';
-                    this.vowelBox = '';
-                    this.updateBuilderBoxes();
-                    this.updateHistoryDisplay();
-                });
-            }, 100);
+            // Read the syllable (not spell it) - with a short timeout
+            // If audio takes too long, we'll move to history anyway
+            const timeoutId = setTimeout(() => {
+                // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
+                this.syllableHistory.push(syllable);
+                this.consonantBox = '';
+                this.vowelBox = '';
+                this.updateBuilderBoxes();
+                this.updateHistoryDisplay();
+            }, 2000);
+            
+            this.playSound(syllable, () => {
+                // Clear the fallback timeout since audio completed
+                clearTimeout(timeoutId);
+                // After reading, move to history and clear boxes
+                this.syllableHistory.push(syllable);
+                this.consonantBox = '';
+                this.vowelBox = '';
+                this.updateBuilderBoxes();
+                this.updateHistoryDisplay();
+            });
         }
     }
     
