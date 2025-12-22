@@ -468,15 +468,17 @@ class ReadingCompanion {
         const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
         this.consonantBox = boxText;
         this.updateBuilderBoxes();
-        this.playSound(consonant);
-        this.checkAndCompleteSyllable();
+        // Capture the promise returned by playSound
+        const soundPromise = this.playSound(consonant);
+        this.checkAndCompleteSyllable(soundPromise);
     }
     
     handleVowelClick(vowel) {
         this.vowelBox = vowel;
         this.updateBuilderBoxes();
-        this.playSound(vowel);
-        this.checkAndCompleteSyllable();
+        // Capture the promise returned by playSound
+        const soundPromise = this.playSound(vowel);
+        this.checkAndCompleteSyllable(soundPromise);
     }
     
     updateBuilderBoxes() {
@@ -497,13 +499,14 @@ class ReadingCompanion {
         }
     }
     
-    checkAndCompleteSyllable() {
+    checkAndCompleteSyllable(letterSoundPromise) {
         // If both boxes are filled, read the syllable and move to history
         if (this.consonantBox && this.vowelBox) {
             const syllable = this.consonantBox + this.vowelBox;
             
-            // Wait for the current letter sound to complete before playing the syllable
-            this.currentSoundPromise.then(() => {
+            // Wait for the letter sound to complete before playing the syllable
+            // Use the passed promise which represents the sound that was just played
+            letterSoundPromise.then(() => {
                 // Small delay to create clear separation between letter sound and syllable sound
                 setTimeout(() => {
                     // Read the syllable (not spell it) - with a short timeout
