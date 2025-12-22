@@ -177,6 +177,41 @@ h2 {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
+.history-item.playing {
+    background: #51cf66;
+    color: white;
+    animation: pulse 0.5s ease-in-out;
+}
+
+.history-buttons {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.btn-play {
+    padding: 12px 24px;
+    background: #51cf66;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-play:hover {
+    background: #40c057;
+    transform: scale(1.05);
+}
+
+.btn-play:disabled {
+    background: #a0a0a0;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-clear {
     padding: 12px 24px;
     background: #ff6b6b;
