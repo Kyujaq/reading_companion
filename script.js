@@ -647,26 +647,49 @@ class ReadingCompanion {
     }
 
     playSound(text, callback) {
-        // Create a new promise that wraps the audio playback
-        const soundPromise = new Promise((resolve) => {
+        // Create a new promise that wraps the audio playback with timeout
+        const soundPromise = new Promise((resolve, reject) => {
+            let completed = false;
+            
             const wrappedCallback = () => {
-                if (callback) callback();
-                resolve();
+                if (!completed) {
+                    completed = true;
+                    if (callback) callback();
+                    resolve();
+                }
             };
+            
+            // Timeout fallback to prevent hanging (5 seconds should be enough for any sound)
+            const timeoutId = setTimeout(() => {
+                if (!completed) {
+                    console.warn('Sound playback timed out for:', text);
+                    wrappedCallback();
+                }
+            }, 5000);
             
             // For French, use audio files instead of TTS
             if (this.currentLanguage === 'fr') {
-                this.playFrenchAudio(text, wrappedCallback);
+                this.playFrenchAudio(text, () => {
+                    clearTimeout(timeoutId);
+                    wrappedCallback();
+                });
             } else {
                 // Use TTS for English
-                this.playTTS(text, wrappedCallback);
+                this.playTTS(text, () => {
+                    clearTimeout(timeoutId);
+                    wrappedCallback();
+                });
             }
+        }).catch((error) => {
+            // Ensure we don't hang on errors
+            console.error('Error playing sound:', error);
+            if (callback) callback();
         });
         
-        // Update the current sound promise
-        this.currentSoundPromise = soundPromise;
+        // Chain the promise to ensure sounds play in sequence, not simultaneously
+        this.currentSoundPromise = this.currentSoundPromise.then(() => soundPromise).catch(() => soundPromise);
         
-        return soundPromise;
+        return this.currentSoundPromise;
     }
 
     async playFrenchAudio(text, callback) {
