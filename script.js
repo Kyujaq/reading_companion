@@ -16,6 +16,9 @@ class ReadingCompanion {
         this.vowelBox = '';
         this.syllableHistory = [];
         
+        // Track currently playing sounds to prevent overlap
+        this.currentSoundPromise = Promise.resolve();
+        
         // Define vowels for both languages
         this.vowels = {
             en: ['a', 'e', 'i', 'o', 'u'],
@@ -499,30 +502,33 @@ class ReadingCompanion {
         if (this.consonantBox && this.vowelBox) {
             const syllable = this.consonantBox + this.vowelBox;
             
-            // Small delay to let user see the complete syllable (reduced from 300ms to 100ms)
-            setTimeout(() => {
-                // Read the syllable (not spell it) - with a short timeout
-                // If audio takes too long, we'll move to history anyway
-                const timeoutId = setTimeout(() => {
-                    // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
-                    this.syllableHistory.push(syllable);
-                    this.consonantBox = '';
-                    this.vowelBox = '';
-                    this.updateBuilderBoxes();
-                    this.updateHistoryDisplay();
-                }, 2000);
-                
-                this.playSound(syllable, () => {
-                    // Clear the fallback timeout since audio completed
-                    clearTimeout(timeoutId);
-                    // After reading, move to history and clear boxes
-                    this.syllableHistory.push(syllable);
-                    this.consonantBox = '';
-                    this.vowelBox = '';
-                    this.updateBuilderBoxes();
-                    this.updateHistoryDisplay();
-                });
-            }, 100);
+            // Wait for the current letter sound to complete before playing the syllable
+            this.currentSoundPromise.then(() => {
+                // Small delay to create clear separation between letter sound and syllable sound
+                setTimeout(() => {
+                    // Read the syllable (not spell it) - with a short timeout
+                    // If audio takes too long, we'll move to history anyway
+                    const timeoutId = setTimeout(() => {
+                        // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
+                        this.syllableHistory.push(syllable);
+                        this.consonantBox = '';
+                        this.vowelBox = '';
+                        this.updateBuilderBoxes();
+                        this.updateHistoryDisplay();
+                    }, 2000);
+                    
+                    this.playSound(syllable, () => {
+                        // Clear the fallback timeout since audio completed
+                        clearTimeout(timeoutId);
+                        // After reading, move to history and clear boxes
+                        this.syllableHistory.push(syllable);
+                        this.consonantBox = '';
+                        this.vowelBox = '';
+                        this.updateBuilderBoxes();
+                        this.updateHistoryDisplay();
+                    });
+                }, 300); // Increased delay for clearer separation
+            });
         }
     }
     
@@ -722,13 +728,49 @@ class ReadingCompanion {
     }
 
     playSound(text, callback) {
-        // For French, use audio files instead of TTS
-        if (this.currentLanguage === 'fr') {
-            this.playFrenchAudio(text, callback);
-        } else {
-            // Use TTS for English
-            this.playTTS(text, callback);
-        }
+        // Create a new promise that wraps the audio playback with timeout
+        const soundPromise = new Promise((resolve, reject) => {
+            let completed = false;
+            
+            const wrappedCallback = () => {
+                if (!completed) {
+                    completed = true;
+                    if (callback) callback();
+                    resolve();
+                }
+            };
+            
+            // Timeout fallback to prevent hanging (5 seconds should be enough for any sound)
+            const timeoutId = setTimeout(() => {
+                if (!completed) {
+                    console.warn('Sound playback timed out for:', text);
+                    wrappedCallback();
+                }
+            }, 5000);
+            
+            // For French, use audio files instead of TTS
+            if (this.currentLanguage === 'fr') {
+                this.playFrenchAudio(text, () => {
+                    clearTimeout(timeoutId);
+                    wrappedCallback();
+                });
+            } else {
+                // Use TTS for English
+                this.playTTS(text, () => {
+                    clearTimeout(timeoutId);
+                    wrappedCallback();
+                });
+            }
+        }).catch((error) => {
+            // Ensure we don't hang on errors
+            console.error('Error playing sound:', error);
+            if (callback) callback();
+        });
+        
+        // Chain the promise to ensure sounds play in sequence, not simultaneously
+        this.currentSoundPromise = this.currentSoundPromise.then(() => soundPromise).catch(() => soundPromise);
+        
+        return this.currentSoundPromise;
     }
 
     async playFrenchAudio(text, callback) {
@@ -829,6 +871,7 @@ class ReadingCompanion {
         
         if (callback) {
             utterance.onend = callback;
+            utterance.onerror = callback; // Ensure callback is called even on error
         }
         
         this.synth.speak(utterance);
