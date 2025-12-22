@@ -504,6 +504,12 @@ class ReadingCompanion {
         if (this.consonantBox && this.vowelBox) {
             const syllable = this.consonantBox + this.vowelBox;
             
+            // Ensure we have a valid promise before proceeding
+            if (!letterSoundPromise || typeof letterSoundPromise.then !== 'function') {
+                console.warn('Invalid promise passed to checkAndCompleteSyllable');
+                return;
+            }
+            
             // Wait for the letter sound to complete before playing the syllable
             // Use the passed promise which represents the sound that was just played
             letterSoundPromise.then(() => {
