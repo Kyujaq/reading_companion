@@ -700,13 +700,19 @@ class ReadingCompanion {
         const historyItems = document.querySelectorAll('.history-item');
         historyItems.forEach(item => item.classList.add('playing'));
         
-        for (const wordInfo of detectedWords) {
+        for (let i = 0; i < detectedWords.length; i++) {
+            const wordInfo = detectedWords[i];
             await new Promise(resolve => {
-                this.playSound(wordInfo.word, resolve);
+                // Ensure resolve is called even if playSound doesn't execute callback
+                const timeout = setTimeout(resolve, 5000);
+                this.playSound(wordInfo.word, () => {
+                    clearTimeout(timeout);
+                    resolve();
+                });
             });
             
             // Small delay between words
-            if (detectedWords.indexOf(wordInfo) < detectedWords.length - 1) {
+            if (i < detectedWords.length - 1) {
                 await this.sleep(500);
             }
         }
