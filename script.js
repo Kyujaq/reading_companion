@@ -294,7 +294,7 @@ class ReadingCompanion {
             fr: {
                 letters: 'abcdefghijklmnopqrstuvwxyzàâäéèêëïîôùûüÿæœç'.split(''),
                 syllables: [
-                    // Common consonant-vowel syllables
+                    // Common consonant-vowel syllables only (no complex sounds/digraphs)
                     'ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ce', 'ci', 'co', 'cu',
                     'da', 'de', 'di', 'do', 'du', 'fa', 'fe', 'fi', 'fo', 'fu',
                     'ga', 'ge', 'gi', 'go', 'gu', 'ha', 'he', 'hi', 'ho', 'hu',
@@ -303,15 +303,7 @@ class ReadingCompanion {
                     'pa', 'pe', 'pi', 'po', 'pu', 'ra', 're', 'ri', 'ro', 'ru',
                     'sa', 'se', 'si', 'so', 'su', 'ta', 'te', 'ti', 'to', 'tu',
                     'va', 've', 'vi', 'vo', 'vu', 'wa', 'we', 'wi', 'wo', 'wu',
-                    'za', 'ze', 'zi', 'zo', 'zu',
-                    // Digraphs
-                    'ch', 'gn',
-                    // Vowel combinations
-                    'ai', 'au', 'eau', 'ei', 'oi', 'ou', 'oe',
-                    // Nasal vowels (combined similar sounds)
-                    'an', 'en', 'in', 'ain', 'on', 'un',
-                    // Special combinations
-                    'er', 'et', 'ez', 'io', 'ien', 'ienne'
+                    'za', 'ze', 'zi', 'zo', 'zu'
                 ],
                 words: ['chat', 'chien', 'maison', 'soleil', 'lune', 'étoile', 'arbre',
                        'livre', 'stylo', 'tasse', 'balle', 'poisson', 'oiseau', 'main',
@@ -578,7 +570,6 @@ class ReadingCompanion {
             btn.textContent = syllable;
             
             btn.addEventListener('click', () => {
-                this.addToAssembly(syllable);
                 this.playSound(syllable);
             });
             
