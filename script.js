@@ -12,8 +12,8 @@ class ReadingCompanion {
         this.audioContext = null;
         
         // New state for syllable builder
-        this.consonantBox = '';
-        this.vowelBox = '';
+        this.firstBox = '';
+        this.secondBox = '';
         this.syllableHistory = [];
         
         // Track currently playing sounds to prevent overlap
@@ -22,12 +22,12 @@ class ReadingCompanion {
         // Define vowels for both languages
         this.vowels = {
             en: ['a', 'e', 'i', 'o', 'u'],
-            fr: ['a', 'e', 'i', 'o', 'u', 'y', 'à', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'ï', 'î', 'ô', 'ù', 'û', 'ü', 'ÿ', 'æ', 'œ']
+            fr: ['a', 'e', 'i', 'o', 'u', 'y', 'é', 'è', 'ê']
         };
         
         // Define complex vowel sounds (digraphs and special combinations)
         this.complexVowels = {
-            fr: ['ou', 'où', 'oû', 'au', 'eau', 'ai', 'ei', 'oi', 'oe', 'œ', 'an', 'am', 'en', 'em', 'in', 'im', 'ain', 'ein', 'un', 'on', 'yn', 'ym', 'io', 'ien', 'ienne', 'er', 'et', 'ez'],
+            fr: ['ou', 'au', 'ai', 'oi', 'an', 'en', 'in', 'ain', 'un', 'on', 'io', 'ien', 'ienne', 'er', 'et', 'ez'],
             en: ['ou', 'au', 'ai', 'ei', 'oi', 'oo', 'ee', 'ea']
         };
         
@@ -77,35 +77,17 @@ class ReadingCompanion {
             'x': ['s sound.wav'],
             // Special characters
             'ç': ['s sound.wav'], // c with cedilla sounds like s
-            'æ': ['e.wav'], // ae ligature sounds like e
-            // Accented vowels
-            'à': ['a.wav'],
-            'â': ['a.wav'],
-            'ä': ['a.wav'],
+            // Accented vowels (only é, è, ê kept)
             'é': ['é.wav'],
             'è': ['è.wav'],
             'ê': ['ê.wav'],
-            'ë': ['ë.wav'],
-            'ï': ['i.wav'],
-            'î': ['i.wav'],
-            'ô': ['ô.wav'],
-            'ù': ['u.wav'],
-            'û': ['u.wav'],
-            'ü': ['u.wav'],
-            'ÿ': ['y.wav'],
             // Digraphs and syllables
             'ch': ['ch.wav'],
             'gn': ['gn.wav'],
             'ai': ['ai.wav'],
             'au': ['au.wav'],
-            'eau': ['eau.wav'],
-            'ei': ['ei.wav'],
             'oi': ['oi.wav'],
             'ou': ['ou.wav'],
-            'où': ['où.wav'],
-            'oû': ['oû.wav'],
-            'oe': ['oe.wav'],
-            'œ': ['oe.wav'],
             'er': ['er.wav'],
             'et': ['et.wav'],
             'ez': ['ez.wav'],
@@ -118,6 +100,7 @@ class ReadingCompanion {
             'im': ['in.wav'], // same sound as in
             'ain': ['ain.wav'],
             'ein': ['ain.wav'], // same sound as ain
+            'eau': ['au.wav'], // same sound as au
             'un': ['un.wav'],
             'on': ['on.wav'],
             'yn': ['in.wav'], // same as in
@@ -292,7 +275,7 @@ class ReadingCompanion {
                 voiceLang: 'en-US'
             },
             fr: {
-                letters: 'abcdefghijklmnopqrstuvwxyzàâäéèêëïîôùûüÿæœç'.split(''),
+                letters: 'abcdefghijklmnopqrstuvwxyzéèêç'.split(''),
                 syllables: [
                     // Common consonant-vowel syllables only (no complex sounds/digraphs)
                     'ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ce', 'ci', 'co', 'cu',
@@ -458,18 +441,27 @@ class ReadingCompanion {
     handleConsonantClick(consonant) {
         // Special case: Q writes "Qu" in the box but still shows Q on button
         const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
-        this.consonantBox = boxText;
-        this.updateBuilderBoxes();
-        // Capture the promise returned by playSound
-        const soundPromise = this.playSound(consonant);
-        this.checkAndCompleteSyllable(soundPromise);
+        this.handleLetterClick(boxText);
     }
     
     handleVowelClick(vowel) {
-        this.vowelBox = vowel;
+        this.handleLetterClick(vowel);
+    }
+    
+    handleLetterClick(letter) {
+        // Put letter in first empty box
+        if (!this.firstBox) {
+            this.firstBox = letter;
+        } else if (!this.secondBox) {
+            this.secondBox = letter;
+        } else {
+            // Both boxes are full, do nothing (or could auto-clear and start over)
+            return;
+        }
+        
         this.updateBuilderBoxes();
         // Capture the promise returned by playSound
-        const soundPromise = this.playSound(vowel);
+        const soundPromise = this.playSound(letter);
         this.checkAndCompleteSyllable(soundPromise);
     }
     
@@ -477,15 +469,15 @@ class ReadingCompanion {
         const consonantBoxEl = document.getElementById('consonantBox');
         const vowelBoxEl = document.getElementById('vowelBox');
         
-        consonantBoxEl.textContent = this.consonantBox;
-        vowelBoxEl.textContent = this.vowelBox;
+        consonantBoxEl.textContent = this.firstBox;
+        vowelBoxEl.textContent = this.secondBox;
         
         // Add filled class for animation
-        if (this.consonantBox) {
+        if (this.firstBox) {
             consonantBoxEl.classList.add('filled');
             setTimeout(() => consonantBoxEl.classList.remove('filled'), 300);
         }
-        if (this.vowelBox) {
+        if (this.secondBox) {
             vowelBoxEl.classList.add('filled');
             setTimeout(() => vowelBoxEl.classList.remove('filled'), 300);
         }
@@ -493,8 +485,8 @@ class ReadingCompanion {
     
     checkAndCompleteSyllable(letterSoundPromise) {
         // If both boxes are filled, read the syllable and move to history
-        if (this.consonantBox && this.vowelBox) {
-            const syllable = this.consonantBox + this.vowelBox;
+        if (this.firstBox && this.secondBox) {
+            const syllable = this.firstBox + this.secondBox;
             
             // Ensure we have a valid promise before proceeding
             if (!letterSoundPromise || typeof letterSoundPromise.then !== 'function') {
@@ -512,8 +504,8 @@ class ReadingCompanion {
                     const timeoutId = setTimeout(() => {
                         // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
                         this.syllableHistory.push(syllable);
-                        this.consonantBox = '';
-                        this.vowelBox = '';
+                        this.firstBox = '';
+                        this.secondBox = '';
                         this.updateBuilderBoxes();
                         this.updateHistoryDisplay();
                     }, 2000);
@@ -523,8 +515,8 @@ class ReadingCompanion {
                         clearTimeout(timeoutId);
                         // After reading, move to history and clear boxes
                         this.syllableHistory.push(syllable);
-                        this.consonantBox = '';
-                        this.vowelBox = '';
+                        this.firstBox = '';
+                        this.secondBox = '';
                         this.updateBuilderBoxes();
                         this.updateHistoryDisplay();
                     });
@@ -551,8 +543,8 @@ class ReadingCompanion {
     }
     
     clearSyllableBuilder() {
-        this.consonantBox = '';
-        this.vowelBox = '';
+        this.firstBox = '';
+        this.secondBox = '';
         this.syllableHistory = [];
         this.updateBuilderBoxes();
         this.updateHistoryDisplay();
