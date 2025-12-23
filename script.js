@@ -466,20 +466,20 @@ class ReadingCompanion {
     }
     
     updateBuilderBoxes() {
-        const consonantBoxEl = document.getElementById('consonantBox');
-        const vowelBoxEl = document.getElementById('vowelBox');
+        const firstBoxEl = document.getElementById('consonantBox');
+        const secondBoxEl = document.getElementById('vowelBox');
         
-        consonantBoxEl.textContent = this.firstBox;
-        vowelBoxEl.textContent = this.secondBox;
+        firstBoxEl.textContent = this.firstBox;
+        secondBoxEl.textContent = this.secondBox;
         
         // Add filled class for animation
         if (this.firstBox) {
-            consonantBoxEl.classList.add('filled');
-            setTimeout(() => consonantBoxEl.classList.remove('filled'), 300);
+            firstBoxEl.classList.add('filled');
+            setTimeout(() => firstBoxEl.classList.remove('filled'), 300);
         }
         if (this.secondBox) {
-            vowelBoxEl.classList.add('filled');
-            setTimeout(() => vowelBoxEl.classList.remove('filled'), 300);
+            secondBoxEl.classList.add('filled');
+            setTimeout(() => secondBoxEl.classList.remove('filled'), 300);
         }
     }
     
