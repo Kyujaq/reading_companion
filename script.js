@@ -534,7 +534,7 @@ class ReadingCompanion {
         const tabTexts = {
             letters: fr ? '🔤 Lettres et syllabes' : '🔤 Letters & Syllables',
             words: fr ? '📚 Mots et histoires' : '📚 Words & Stories',
-            gallery: '🖼️ Gallery',
+            gallery: fr ? '🖼️ Galerie' : '🖼️ Gallery',
             camera: fr ? '📷 Caméra' : '📷 Camera'
         };
         document.querySelectorAll('.tab-btn').forEach(function(btn) {
@@ -628,6 +628,10 @@ class ReadingCompanion {
         // PIN overlay
         var pinSubtitle = document.getElementById('settingsPinSubtitle');
         if (pinSubtitle) pinSubtitle.textContent = fr ? 'Entrez le NIP pour accéder aux paramètres' : 'Enter PIN to access settings';
+
+        // Refresh progress & weak spots displays with current language
+        if (window.progressTracker) window.progressTracker.updateDisplay();
+        if (window.spacedRepetition) window.spacedRepetition.updateWeakSpotsDisplay();
     }
 
     renderSyllableBuilder() {
