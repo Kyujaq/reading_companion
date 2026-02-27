@@ -574,13 +574,20 @@ class ReadingCompanion {
         }
         // Special case: Q writes "Qu" in the box but still shows Q on button
         const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
-        this.consonantBox = boxText;
+        
+        // Put in first empty box
+        if (!this.firstBox) {
+            this.firstBox = boxText;
+        } else if (!this.secondBox) {
+            this.secondBox = boxText;
+        } else {
+            return;
+        }
+        
         this.updateBuilderBoxes();
-        // Wait for the consonant sound to finish before checking for complete syllable
-        this.playSound(consonant, () => {
-            this.checkAndCompleteSyllable();
-        });
-        this.handleLetterClick(boxText);
+        // Play the consonant sound, then check if syllable is complete
+        const soundPromise = this.playSound(consonant);
+        this.checkAndCompleteSyllable(soundPromise);
     }
     
     handleVowelClick(vowel) {
@@ -588,27 +595,19 @@ class ReadingCompanion {
         if (window.instructionModeManager && window.instructionModeManager.active) {
             window.instructionModeManager.handleLetterInput(vowel);
         }
-        this.handleLetterClick(vowel);
-    }
-    
-    handleLetterClick(letter) {
-        // Put letter in first empty box
+        
+        // Put in first empty box
         if (!this.firstBox) {
-            this.firstBox = letter;
+            this.firstBox = vowel;
         } else if (!this.secondBox) {
-            this.secondBox = letter;
+            this.secondBox = vowel;
         } else {
-            // Both boxes are full, do nothing (or could auto-clear and start over)
             return;
         }
         
         this.updateBuilderBoxes();
-        // Wait for the vowel sound to finish before checking for complete syllable
-        this.playSound(vowel, () => {
-            this.checkAndCompleteSyllable();
-        });
-        // Capture the promise returned by playSound
-        const soundPromise = this.playSound(letter);
+        // Play the vowel sound, then check if syllable is complete
+        const soundPromise = this.playSound(vowel);
         this.checkAndCompleteSyllable(soundPromise);
     }
     
@@ -643,50 +642,35 @@ class ReadingCompanion {
         if (this.firstBox && this.secondBox) {
             const syllable = this.firstBox + this.secondBox;
             
-
-            // Read the syllable (not spell it) - with a short timeout
-            // If audio takes too long, we'll move to history anyway
-            const timeoutId = setTimeout(() => {
-                // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
-                this.syllableHistory.push(syllable);
-                this.consonantBox = '';
-                this.vowelBox = '';
-                this.updateBuilderBoxes();
-                this.updateHistoryDisplay();
-            }, 2000);
-            
             // Wait for the letter sound to complete before playing the syllable
-            // Use the passed promise which represents the sound that was just played
-            letterSoundPromise.then(() => {
-                // Small delay to create clear separation between letter sound and syllable sound
-                setTimeout(() => {
-                    // Read the syllable (not spell it) - with a short timeout
-                    // If audio takes too long, we'll move to history anyway
-                    const timeoutId = setTimeout(() => {
-                        // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
-                        this.syllableHistory.push(syllable);
-                        this.firstBox = '';
-                        this.secondBox = '';
-                        this.updateBuilderBoxes();
-                        this.updateHistoryDisplay();
-                        this.triggerCelebration();
-                        this.checkAutoWordDetection();
-                    }, 2000);
-                    
-                    this.playSound(syllable, () => {
-                        // Clear the fallback timeout since audio completed
-                        clearTimeout(timeoutId);
-                        // After reading, move to history and clear boxes
-                        this.syllableHistory.push(syllable);
-                        this.firstBox = '';
-                        this.secondBox = '';
-                        this.updateBuilderBoxes();
-                        this.updateHistoryDisplay();
-                        this.triggerCelebration();
-                        this.checkAutoWordDetection();
-                    });
-                }, 300); // Increased delay for clearer separation
-            });
+            if (letterSoundPromise && typeof letterSoundPromise.then === 'function') {
+                letterSoundPromise.then(() => {
+                    // Small delay to create clear separation between letter sound and syllable sound
+                    setTimeout(() => {
+                        // Fallback timeout in case audio takes too long
+                        const timeoutId = setTimeout(() => {
+                            this.syllableHistory.push(syllable);
+                            this.firstBox = '';
+                            this.secondBox = '';
+                            this.updateBuilderBoxes();
+                            this.updateHistoryDisplay();
+                            this.triggerCelebration();
+                            this.checkAutoWordDetection();
+                        }, 2000);
+                        
+                        this.playSound(syllable, () => {
+                            clearTimeout(timeoutId);
+                            this.syllableHistory.push(syllable);
+                            this.firstBox = '';
+                            this.secondBox = '';
+                            this.updateBuilderBoxes();
+                            this.updateHistoryDisplay();
+                            this.triggerCelebration();
+                            this.checkAutoWordDetection();
+                        });
+                    }, 300);
+                });
+            }
         }
     }
     
@@ -1287,11 +1271,5 @@ class ReadingCompanion {
     }
 }
 
-// Initialize the app when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.readingCompanionApp = new ReadingCompanion();
-    });
-} else {
-    window.readingCompanionApp = new ReadingCompanion();
-}
+// Initialize the app — DOM elements are available since this script is at the end of body
+window.readingCompanionApp = new ReadingCompanion();
