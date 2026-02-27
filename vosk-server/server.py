@@ -55,6 +55,8 @@ async def recognize(websocket):
     rec = KaldiRecognizer(model, SAMPLE_RATE)
     rec.SetWords(True)
 
+    phoneme_mode = False
+
     try:
         async for message in websocket:
             if isinstance(message, str):
@@ -69,6 +71,16 @@ async def recognize(websocket):
                     grammar_json = json.dumps(cfg["grammar"])
                     rec = KaldiRecognizer(model, SAMPLE_RATE, grammar_json)
                     log.debug("Grammar updated: %s", cfg["grammar"])
+
+                if "config" in cfg:
+                    config = cfg["config"]
+                    if "phoneme_mode" in config:
+                        new_phoneme_mode = bool(config["phoneme_mode"])
+                        if new_phoneme_mode != phoneme_mode:
+                            phoneme_mode = new_phoneme_mode
+                            rec = KaldiRecognizer(model, SAMPLE_RATE)
+                            rec.SetWords(True)
+                            log.info("Phoneme mode: %s", phoneme_mode)
 
                 if "lang" in cfg:
                     new_lang = cfg["lang"]
@@ -85,7 +97,25 @@ async def recognize(websocket):
                 # Raw PCM 16-bit little-endian frames from the browser
                 if rec.AcceptWaveform(message):
                     result = json.loads(rec.Result())
-                    await websocket.send(json.dumps({"text": result.get("text", "")}))
+                    if phoneme_mode:
+                        # Extract word-level results and send as phoneme data
+                        words = result.get("result", [])
+                        if words:
+                            phoneme_text = words[0].get("word", "")
+                            confidence = words[0].get("conf", 0.0)
+                            await websocket.send(json.dumps({
+                                "phoneme": phoneme_text,
+                                "confidence": confidence,
+                                "text": result.get("text", "")
+                            }))
+                        else:
+                            await websocket.send(json.dumps({
+                                "phoneme": result.get("text", ""),
+                                "confidence": 1.0,
+                                "text": result.get("text", "")
+                            }))
+                    else:
+                        await websocket.send(json.dumps({"text": result.get("text", "")}))
                 else:
                     partial = json.loads(rec.PartialResult())
                     await websocket.send(json.dumps({"partial": partial.get("partial", "")}))

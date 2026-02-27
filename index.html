@@ -13,6 +13,7 @@
             <div class="header-controls">
                 <button id="caseToggleBtn" class="btn-case" title="Switch between uppercase and lowercase">Aa</button>
                 <button id="instructionModeBtn" class="btn-instruction" title="Instruction Mode">🎓 Lessons</button>
+                <span id="progressBadge" class="progress-badge" style="display:none"></span>
                 <span id="ollamaIndicator" class="service-indicator" title="AI Tutor connected" style="display:none">🤖</span>
                 <span id="voskIndicator" class="service-indicator" title="Voice recognition available" style="display:none">🎤</span>
                 <button id="settingsBtn" class="btn-settings" title="Settings">⚙️</button>
@@ -155,6 +156,8 @@
                 <p class="instruction-subtitle">Choose a lesson to begin:</p>
                 <select id="lessonSelect" class="lesson-select"></select>
                 <button id="instructionStartBtn" class="btn-instruction-start">&#9654; Start Lesson</button>
+                <button id="lessonBuilderOpenBtn" class="btn-builder-open">➕ Create Lesson</button>
+                <button id="practiceWeakSpotsBtn" class="btn-weak-spots" style="display:none">🔄 Practice Weak Spots</button>
             </div>
 
             <div id="instructionSessionPanel" style="display:none">
@@ -197,8 +200,39 @@
             </div>
 
             <div class="settings-row">
-                <label for="ollamaToggle">🤖 AI Tutor (Ollama):</label>
-                <input type="checkbox" id="ollamaToggle" class="settings-toggle">
+                <label for="lettaUrlInput">Letta URL:</label>
+                <input type="text" id="lettaUrlInput" class="settings-text-input" placeholder="http://localhost:8283" maxlength="80">
+            </div>
+
+            <fieldset class="settings-radio-group">
+                <legend>🤖 AI Tutor:</legend>
+                <label class="settings-radio-label"><input type="radio" name="aiBackend" value="none" checked> None</label>
+                <label class="settings-radio-label"><input type="radio" name="aiBackend" value="ollama"> Ollama</label>
+                <label class="settings-radio-label"><input type="radio" name="aiBackend" value="letta"> Letta</label>
+            </fieldset>
+
+            <div id="phonemeModeToggleRow" class="settings-row phoneme-toggle-row" style="display:none">
+                <label for="phonemeModeToggle">🔊 Phoneme mode:</label>
+                <label class="switch">
+                    <input type="checkbox" id="phonemeModeToggle">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <h3 class="settings-services-title">📊 Progress</h3>
+            <div class="progress-stats-row">
+                <span>⭐ Stars: <strong id="progressStarsCount">0</strong></span>
+                <span>🔥 <strong id="progressStreakCount">No streak yet</strong></span>
+            </div>
+            <div id="progressHistoryList" class="progress-history-list">
+                <p class="progress-empty">No lessons completed yet. Start a lesson to earn stars!</p>
+            </div>
+            <button id="printWorksheetBtn" class="btn-progress-clear" type="button" style="margin-right:8px">🖨️ Print Worksheet</button>
+            <button id="progressClearBtn" class="btn-progress-clear" type="button">🗑️ Clear History</button>
+
+            <h3 class="settings-services-title">🔄 Weak Spots</h3>
+            <div id="weakSpotsDisplay" class="weak-spots-display">
+                <span class="weak-spots-empty">No weak spots yet — keep practicing!</span>
             </div>
 
             <h3 class="settings-services-title">Service Status</h3>
@@ -208,8 +242,16 @@
                     <td><span id="ollamaStatus" class="service-status">Checking&hellip;</span></td>
                 </tr>
                 <tr>
+                    <td>🧠 Letta</td>
+                    <td><span id="lettaStatus" class="service-status">Checking&hellip;</span></td>
+                </tr>
+                <tr>
                     <td>🎤 Vosk STT</td>
                     <td><span id="voskStatus" class="service-status">Checking&hellip;</span></td>
+                </tr>
+                <tr id="phonemeModeRow" style="display:none">
+                    <td>🔊 Phoneme Mode</td>
+                    <td><span id="phonemeModeStatus" class="service-status">Off</span></td>
                 </tr>
                 <tr>
                     <td>📷 YOLO</td>
@@ -219,26 +261,168 @@
         </div>
     </div>
 
+    <!-- Lesson Builder Overlay -->
+    <div id="lessonBuilderOverlay" class="lesson-builder-overlay">
+        <div class="lesson-builder-panel">
+            <button id="lessonBuilderCloseBtn" class="instruction-close-btn" title="Close">&#10005;</button>
+            <h2 class="instruction-title">➕ Create Lesson</h2>
+
+            <div class="builder-field">
+                <label for="builderWordInput">Word to spell:</label>
+                <input type="text" id="builderWordInput" class="settings-text-input builder-input" placeholder="e.g. STAR" maxlength="20">
+            </div>
+
+            <div class="builder-field">
+                <label for="builderLangSelect">Language:</label>
+                <select id="builderLangSelect" class="lesson-select builder-lang-select">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="fr">🇫🇷 Français</option>
+                </select>
+            </div>
+
+            <div class="builder-field">
+                <label for="builderIntroInput">Custom intro message (optional):</label>
+                <input type="text" id="builderIntroInput" class="settings-text-input builder-input" placeholder="e.g. Let's learn a new word!" maxlength="200">
+            </div>
+
+            <h3 class="builder-section-title">Lesson Preview</h3>
+            <ol id="builderPreviewSteps" class="builder-preview-list">
+                <li class="builder-preview-empty">Enter a word above to see the lesson steps.</li>
+            </ol>
+
+            <div class="builder-btn-row">
+                <button id="builderPreviewBtn" class="btn-instruction-start builder-preview-btn" disabled>▶ Preview / Test</button>
+                <button id="builderSaveBtn" class="btn-instruction-start builder-save-btn" disabled>💾 Save Lesson</button>
+            </div>
+
+            <h3 class="builder-section-title">Saved Custom Lessons</h3>
+            <div id="builderSavedList">
+                <p class="builder-saved-empty">No custom lessons saved yet.</p>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js?v=4"></script>
+    <script src="progress-tracker.js"></script>
+    <script src="spaced-repetition.js"></script>
+    <script src="printable-worksheet.js"></script>
     <script src="instruction-mode.js"></script>
+    <script src="lesson-builder.js"></script>
     <script src="gallery.js"></script>
     <script src="vosk-client.js"></script>
     <script src="ollama-coach.js"></script>
+    <script src="letta-agent.js"></script>
     <script src="yolo-camera.js"></script>
     <script>
     (async function bootstrap() {
         var app = window.readingCompanionApp;
 
+        // Progress Tracker
+        window.progressTracker = new ProgressTracker();
+
         // Instruction Mode
         window.instructionModeManager = new InstructionModeManager(app);
         window.instructionModeManager.init();
+
+        // Lesson Builder
+        window.lessonBuilder = new LessonBuilder(app);
+        window.lessonBuilder.init();
+
+        // Spaced Repetition
+        window.spacedRepetition = new SpacedRepetitionTracker();
+
+        // Printable Worksheet
+        window.worksheetGenerator = new WorksheetGenerator();
+        var printBtn = document.getElementById('printWorksheetBtn');
+        if (printBtn) {
+            printBtn.addEventListener('click', function() {
+                window.worksheetGenerator.generateWorksheet();
+            });
+        }
+
+        // Wire progress + spaced repetition into lesson completion
+        var origOnComplete = window.instructionModeManager._onLessonComplete.bind(window.instructionModeManager);
+        window.instructionModeManager._onLessonComplete = function(report) {
+            var lesson = window.instructionModeManager.session
+                ? window.instructionModeManager.session.lesson : null;
+            origOnComplete(report);
+            if (lesson) {
+                window.progressTracker.saveSession(report, lesson);
+            }
+            window.spacedRepetition.updateWeakSpotsDisplay();
+            _updatePracticeBtn();
+        };
+
+        // Patch InstructionSession.handleInput to track letter attempts
+        var origHandleInput = InstructionSession.prototype.handleInput;
+        InstructionSession.prototype.handleInput = function(input) {
+            var step = this.currentStep;
+            if (step && step.type === 'prompt' && step.expected) {
+                var expected = step.expected.toLowerCase();
+                var received = input.toLowerCase();
+                window.spacedRepetition.recordAttempt(expected, received === expected);
+            }
+            origHandleInput.call(this, input);
+        };
+
+        // Clear history button (clears both progress and spaced repetition)
+        var clearBtn = document.getElementById('progressClearBtn');
+        if (clearBtn) clearBtn.addEventListener('click', function() {
+            window.progressTracker.clearHistory();
+            window.spacedRepetition.clearData();
+        });
+
+        // Practice Weak Spots button
+        var practiceBtn = document.getElementById('practiceWeakSpotsBtn');
+        function _updatePracticeBtn() {
+            if (!practiceBtn) return;
+            var hasWeakSpots = window.spacedRepetition.getStrugglingLetters(1).length > 0;
+            practiceBtn.style.display = hasWeakSpots ? '' : 'none';
+        }
+        if (practiceBtn) {
+            practiceBtn.addEventListener('click', function() {
+                var lang = app.currentLanguage;
+                var lesson = window.spacedRepetition.buildPracticeLesson(lang);
+                if (lesson) {
+                    window.instructionModeManager.startLesson(lesson);
+                }
+            });
+        }
+        _updatePracticeBtn();
+
+        // Inject struggled-letter suggestions into guided examples
+        var origShowGuided = app.showGuidedExample.bind(app);
+        app.showGuidedExample = function() {
+            // ~30% chance to suggest a struggled syllable instead
+            if (Math.random() < 0.3) {
+                var suggestion = window.spacedRepetition.getSuggestedSyllable(app.currentLanguage);
+                if (suggestion) {
+                    var el = document.getElementById('guidedExample');
+                    var isFr = app.currentLanguage === 'fr';
+                    var text = isFr
+                        ? '🔄 Révise : ' + suggestion.consonant + ' + ' + suggestion.vowel + ' = ' + suggestion.syllable
+                        : '🔄 Review: ' + suggestion.consonant + ' + ' + suggestion.vowel + ' = ' + suggestion.syllable;
+                    el.textContent = text;
+                    el.style.animation = 'none';
+                    void el.offsetHeight;
+                    el.style.animation = 'fadeInExample 0.5s ease-in';
+                    return;
+                }
+            }
+            origShowGuided();
+        };
+
+        // Initial display
+        window.progressTracker.updateDisplay();
+        window.spacedRepetition.updateWeakSpotsDisplay();
 
         // Gallery
         window.galleryManager = new GalleryManager(app);
         window.galleryManager.init();
 
-        // Ollama + Vosk + YOLO
+        // Ollama + Letta + Vosk + YOLO
         var ollamaCoach = new OllamaCoach();
+        var lettaAgent = new LettaAgent();
         var voskIntegration = new VoskIntegration();
         var yoloManager = new YoloCameraManager(app);
 
@@ -246,33 +430,12 @@
         var settingsManager = new SettingsManager(
             ollamaCoach,
             voskIntegration,
-            window.instructionModeManager.feedback
+            window.instructionModeManager.feedback,
+            lettaAgent
         );
         settingsManager.init();
 
-        // Check availability in parallel
-        var results = await Promise.all([
-            ollamaCoach.checkAvailability(),
-            voskIntegration.init(window.instructionModeManager),
-            yoloManager.checkAvailability()
-        ]);
-        var yoloOk = results[2];
-
-        if (yoloOk) {
-            var cameraTab = document.getElementById('cameraTabBtn');
-            if (cameraTab) cameraTab.style.display = '';
-            yoloManager.init();
-        }
-
-        settingsManager.updateServiceStatus();
-
-        var yoloStatus = document.getElementById('yoloServiceStatus');
-        if (yoloStatus) {
-            yoloStatus.textContent = yoloOk ? '\u2705 Available' : '\u274C Not reachable';
-            yoloStatus.className = 'service-status ' + (yoloOk ? 'ok' : 'err');
-        }
-
-        // Tab navigation
+        // Tab navigation (set up immediately, before async checks)
         document.querySelectorAll('.tab-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 var tabId = btn.dataset.tab;
@@ -291,6 +454,55 @@
             window.instructionModeManager.onLanguageChange();
             window.galleryManager.onLanguageChange();
         };
+
+        // Check availability in parallel
+        var results = await Promise.all([
+            ollamaCoach.checkAvailability(),
+            voskIntegration.init(window.instructionModeManager),
+            yoloManager.checkAvailability(),
+            lettaAgent.checkAvailability()
+        ]);
+        var yoloOk = results[2];
+
+        if (yoloOk) {
+            var cameraTab = document.getElementById('cameraTabBtn');
+            if (cameraTab) cameraTab.style.display = '';
+            yoloManager.init();
+        }
+
+        settingsManager.updateServiceStatus();
+
+        // Phoneme mode toggle (only visible when Vosk is available)
+        var phonemeToggleRow = document.getElementById('phonemeModeToggleRow');
+        var phonemeToggle = document.getElementById('phonemeModeToggle');
+        var phonemeModeRow = document.getElementById('phonemeModeRow');
+        if (voskIntegration.available) {
+            if (phonemeToggleRow) phonemeToggleRow.style.display = '';
+            if (phonemeModeRow) phonemeModeRow.style.display = '';
+            if (phonemeToggle) {
+                phonemeToggle.checked = voskIntegration.phonemeMode;
+                phonemeToggle.addEventListener('change', function() {
+                    voskIntegration.setPhonemeMode(phonemeToggle.checked);
+                    var statusEl = document.getElementById('phonemeModeStatus');
+                    if (statusEl) {
+                        statusEl.textContent = phonemeToggle.checked ? '✅ On' : 'Off';
+                        statusEl.className = 'service-status ' + (phonemeToggle.checked ? 'ok' : '');
+                    }
+                });
+                // Set initial status display
+                var statusEl = document.getElementById('phonemeModeStatus');
+                if (statusEl) {
+                    statusEl.textContent = voskIntegration.phonemeMode ? '✅ On' : 'Off';
+                    statusEl.className = 'service-status ' + (voskIntegration.phonemeMode ? 'ok' : '');
+                }
+            }
+        }
+
+        var yoloStatus = document.getElementById('yoloServiceStatus');
+        if (yoloStatus) {
+            yoloStatus.textContent = yoloOk ? '\u2705 Available' : '\u274C Not reachable';
+            yoloStatus.className = 'service-status ' + (yoloOk ? 'ok' : 'err');
+        }
     })();
     </script>
 </body>

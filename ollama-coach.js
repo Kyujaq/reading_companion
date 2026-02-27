@@ -98,10 +98,11 @@ class OllamaCoach {
 // ── Settings Panel Manager ────────────────────────────────────────────────────
 
 class SettingsManager {
-    constructor(ollamaCoach, voskIntegration, feedbackEngine) {
+    constructor(ollamaCoach, voskIntegration, feedbackEngine, lettaAgent) {
         this.ollamaCoach = ollamaCoach;
         this.voskIntegration = voskIntegration;
         this.feedbackEngine = feedbackEngine;
+        this.lettaAgent = lettaAgent || null;
     }
 
     init() {
@@ -111,16 +112,18 @@ class SettingsManager {
         const closeBtn = document.getElementById('settingsCloseBtn');
         if (closeBtn) closeBtn.addEventListener('click', () => this.closePanel());
 
-        const ollamaToggle = document.getElementById('ollamaToggle');
-        if (ollamaToggle) {
-            ollamaToggle.addEventListener('change', () => {
-                this.feedbackEngine.useOllama = ollamaToggle.checked;
-                if (ollamaToggle.checked && this.ollamaCoach.available) {
-                    this.feedbackEngine.ollamaCoach = this.ollamaCoach;
-                } else {
-                    this.feedbackEngine.ollamaCoach = null;
-                }
-            });
+        // AI backend radio buttons (None / Ollama / Letta)
+        const radios = document.querySelectorAll('input[name="aiBackend"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', () => this._onAiBackendChange(radio.value));
+        });
+
+        // Restore saved AI backend selection
+        const savedBackend = localStorage.getItem('aiBackend') || 'none';
+        const savedRadio = document.querySelector('input[name="aiBackend"][value="' + savedBackend + '"]');
+        if (savedRadio) {
+            savedRadio.checked = true;
+            this._onAiBackendChange(savedBackend);
         }
 
         const urlInput = document.getElementById('ollamaUrlInput');
@@ -135,16 +138,30 @@ class SettingsManager {
             });
         }
 
+        const lettaUrlInput = document.getElementById('lettaUrlInput');
+        if (lettaUrlInput && this.lettaAgent) {
+            lettaUrlInput.value = this.lettaAgent.baseUrl;
+            lettaUrlInput.addEventListener('change', () => {
+                const url = lettaUrlInput.value.trim();
+                if (url) {
+                    this.lettaAgent.baseUrl = url;
+                    localStorage.setItem('lettaUrl', url);
+                }
+            });
+        }
+
         const nameInput = document.getElementById('childNameInput');
         if (nameInput) {
             nameInput.addEventListener('input', () => {
                 this.ollamaCoach.childName = nameInput.value.trim();
+                if (this.lettaAgent) this.lettaAgent.childName = nameInput.value.trim();
             });
             // Restore saved name
             const saved = localStorage.getItem('childName');
             if (saved) {
                 nameInput.value = saved;
                 this.ollamaCoach.childName = saved;
+                if (this.lettaAgent) this.lettaAgent.childName = saved;
             }
             nameInput.addEventListener('change', () => {
                 localStorage.setItem('childName', nameInput.value.trim());
@@ -152,15 +169,38 @@ class SettingsManager {
         }
     }
 
+    _onAiBackendChange(value) {
+        localStorage.setItem('aiBackend', value);
+        if (value === 'ollama') {
+            this.feedbackEngine.useOllama = true;
+            this.feedbackEngine.ollamaCoach = this.ollamaCoach.available ? this.ollamaCoach : null;
+        } else if (value === 'letta' && this.lettaAgent) {
+            // LettaAgent exposes the same getEncouragement/getSessionSummary API;
+            // reuse useOllama/ollamaCoach fields to avoid changing FeedbackEngine
+            this.feedbackEngine.useOllama = true;
+            this.feedbackEngine.ollamaCoach = this.lettaAgent.available ? this.lettaAgent : null;
+        } else {
+            this.feedbackEngine.useOllama = false;
+            this.feedbackEngine.ollamaCoach = null;
+        }
+    }
+
     updateServiceStatus() {
         const ollamaStatus = document.getElementById('ollamaStatus');
         const voskStatus = document.getElementById('voskStatus');
+        const lettaStatus = document.getElementById('lettaStatus');
 
         if (ollamaStatus) {
             ollamaStatus.textContent = this.ollamaCoach.available
                 ? `✅ Connected (${this.ollamaCoach.model})`
                 : '❌ Not reachable';
             ollamaStatus.className = 'service-status ' + (this.ollamaCoach.available ? 'ok' : 'err');
+        }
+        if (lettaStatus && this.lettaAgent) {
+            lettaStatus.textContent = this.lettaAgent.available
+                ? '✅ Available'
+                : '❌ Not reachable';
+            lettaStatus.className = 'service-status ' + (this.lettaAgent.available ? 'ok' : 'err');
         }
         if (voskStatus) {
             voskStatus.textContent = this.voskIntegration.available ? '✅ Available' : '❌ Not reachable';
@@ -170,7 +210,8 @@ class SettingsManager {
         // Show/hide AI tutor indicator
         const aiIndicator = document.getElementById('ollamaIndicator');
         if (aiIndicator) {
-            aiIndicator.style.display = this.ollamaCoach.available ? '' : 'none';
+            var aiAvailable = this.ollamaCoach.available || (this.lettaAgent && this.lettaAgent.available);
+            aiIndicator.style.display = aiAvailable ? '' : 'none';
         }
     }
 
