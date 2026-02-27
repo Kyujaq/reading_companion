@@ -393,6 +393,22 @@ class InstructionModeManager {
             opt.textContent = lesson.title;
             select.appendChild(opt);
         });
+        // Append custom lessons from localStorage
+        var custom = [];
+        if (window.lessonBuilder) {
+            custom = window.lessonBuilder.loadCustomLessons().filter(function(l) { return l.language === lang; });
+        }
+        if (custom.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = lang === 'fr' ? '✏️ Mes leçons' : '✏️ My Lessons';
+            custom.forEach(function(lesson) {
+                const opt = document.createElement('option');
+                opt.value = lesson.id;
+                opt.textContent = lesson.title;
+                group.appendChild(opt);
+            });
+            select.appendChild(group);
+        }
     }
 
     toggleMode() {
@@ -445,7 +461,11 @@ class InstructionModeManager {
         if (!select) return;
         const lessonId = select.value;
         const lang = this.app.currentLanguage;
-        const lesson = (LESSONS[lang] || []).find(l => l.id === lessonId);
+        var lesson = (LESSONS[lang] || []).find(l => l.id === lessonId);
+        // Also search custom lessons
+        if (!lesson && window.lessonBuilder) {
+            lesson = window.lessonBuilder.loadCustomLessons().find(function(l) { return l.id === lessonId; });
+        }
         if (!lesson) return;
         this.startLesson(lesson);
     }

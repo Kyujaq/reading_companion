@@ -156,6 +156,7 @@
                 <p class="instruction-subtitle">Choose a lesson to begin:</p>
                 <select id="lessonSelect" class="lesson-select"></select>
                 <button id="instructionStartBtn" class="btn-instruction-start">&#9654; Start Lesson</button>
+                <button id="lessonBuilderOpenBtn" class="btn-builder-open">➕ Create Lesson</button>
             </div>
 
             <div id="instructionSessionPanel" style="display:none">
@@ -230,9 +231,51 @@
         </div>
     </div>
 
+    <!-- Lesson Builder Overlay -->
+    <div id="lessonBuilderOverlay" class="lesson-builder-overlay">
+        <div class="lesson-builder-panel">
+            <button id="lessonBuilderCloseBtn" class="instruction-close-btn" title="Close">&#10005;</button>
+            <h2 class="instruction-title">➕ Create Lesson</h2>
+
+            <div class="builder-field">
+                <label for="builderWordInput">Word to spell:</label>
+                <input type="text" id="builderWordInput" class="settings-text-input builder-input" placeholder="e.g. STAR" maxlength="20">
+            </div>
+
+            <div class="builder-field">
+                <label for="builderLangSelect">Language:</label>
+                <select id="builderLangSelect" class="lesson-select builder-lang-select">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="fr">🇫🇷 Français</option>
+                </select>
+            </div>
+
+            <div class="builder-field">
+                <label for="builderIntroInput">Custom intro message (optional):</label>
+                <input type="text" id="builderIntroInput" class="settings-text-input builder-input" placeholder="e.g. Let's learn a new word!" maxlength="200">
+            </div>
+
+            <h3 class="builder-section-title">Lesson Preview</h3>
+            <ol id="builderPreviewSteps" class="builder-preview-list">
+                <li class="builder-preview-empty">Enter a word above to see the lesson steps.</li>
+            </ol>
+
+            <div class="builder-btn-row">
+                <button id="builderPreviewBtn" class="btn-instruction-start builder-preview-btn" disabled>▶ Preview / Test</button>
+                <button id="builderSaveBtn" class="btn-instruction-start builder-save-btn" disabled>💾 Save Lesson</button>
+            </div>
+
+            <h3 class="builder-section-title">Saved Custom Lessons</h3>
+            <div id="builderSavedList">
+                <p class="builder-saved-empty">No custom lessons saved yet.</p>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js?v=4"></script>
     <script src="progress-tracker.js"></script>
     <script src="instruction-mode.js"></script>
+    <script src="lesson-builder.js"></script>
     <script src="gallery.js"></script>
     <script src="vosk-client.js"></script>
     <script src="ollama-coach.js"></script>
@@ -247,6 +290,10 @@
         // Instruction Mode
         window.instructionModeManager = new InstructionModeManager(app);
         window.instructionModeManager.init();
+
+        // Lesson Builder
+        window.lessonBuilder = new LessonBuilder(app);
+        window.lessonBuilder.init();
 
         // Wire progress tracking into lesson completion
         var origOnComplete = window.instructionModeManager._onLessonComplete.bind(window.instructionModeManager);
