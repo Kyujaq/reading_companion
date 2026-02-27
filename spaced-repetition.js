@@ -206,8 +206,11 @@ class SpacedRepetitionTracker {
         var container = document.getElementById('weakSpotsDisplay');
         if (!container) return;
         var struggling = this.getStrugglingLetters(8);
+        var isFr = (window.readingCompanionApp && window.readingCompanionApp.currentLanguage === 'fr');
         if (struggling.length === 0) {
-            container.innerHTML = '<span class="weak-spots-empty">No weak spots yet — keep practicing!</span>';
+            container.innerHTML = '<span class="weak-spots-empty">' +
+                (isFr ? 'Pas de points faibles — continue à pratiquer !' : 'No weak spots yet — keep practicing!') +
+                '</span>';
             return;
         }
         var html = '';

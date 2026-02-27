@@ -107,15 +107,20 @@ class ProgressTracker {
         this._updateProgressPanel();
     }
 
+    _getLang() {
+        return (window.readingCompanionApp && window.readingCompanionApp.currentLanguage) || 'en';
+    }
+
     _updateHeaderBadge() {
         var el = document.getElementById('progressBadge');
         if (!el) return;
         var stars = this.getStars();
         var streak = this.getStreak();
+        var isFr = this._getLang() === 'fr';
         var parts = [];
         parts.push('\u2B50 ' + stars);
         if (streak > 0) {
-            parts.push('\uD83D\uDD25 ' + streak + '-day streak');
+            parts.push('\uD83D\uDD25 ' + (isFr ? 'Série de ' + streak + ' jours' : streak + '-day streak'));
         }
         el.textContent = parts.join('  ');
         el.style.display = (stars > 0 || streak > 0) ? '' : 'none';
@@ -129,20 +134,33 @@ class ProgressTracker {
 
         var stars = this.getStars();
         var streak = this.getStreak();
+        var isFr = this._getLang() === 'fr';
 
         if (starsEl) starsEl.textContent = stars;
-        if (streakEl) streakEl.textContent = streak > 0 ? streak + '-day streak' : 'No streak yet';
+        if (streakEl) streakEl.textContent = streak > 0
+            ? (isFr ? 'Série de ' + streak + ' jours' : streak + '-day streak')
+            : (isFr ? 'Pas encore de série' : 'No streak yet');
+
+        // Update the "Stars:" label
+        var starsLabel = starsEl ? starsEl.parentNode : null;
+        if (starsLabel) {
+            starsLabel.childNodes[0].textContent = isFr ? '⭐ Étoiles : ' : '⭐ Stars: ';
+        }
 
         var history = this.getHistory();
         var recent = history.slice(-10).reverse();
 
         if (recent.length === 0) {
-            listEl.innerHTML = '<p class="progress-empty">No lessons completed yet. Start a lesson to earn stars!</p>';
+            listEl.innerHTML = '<p class="progress-empty">' +
+                (isFr ? 'Aucune leçon terminée. Commence une leçon pour gagner des étoiles !' : 'No lessons completed yet. Start a lesson to earn stars!') +
+                '</p>';
             return;
         }
 
         var html = '<table class="progress-history-table"><thead><tr>' +
-            '<th>Lesson</th><th>Score</th><th>Date</th>' +
+            '<th>' + (isFr ? 'Leçon' : 'Lesson') + '</th>' +
+            '<th>' + (isFr ? 'Score' : 'Score') + '</th>' +
+            '<th>' + (isFr ? 'Date' : 'Date') + '</th>' +
             '</tr></thead><tbody>';
 
         for (var i = 0; i < recent.length; i++) {

@@ -168,6 +168,8 @@
                     </div>
                     <span id="instructionProgressLabel" class="instruction-progress-label">1 / 1</span>
                 </div>
+                <div id="instructionLetterBar" class="instruction-letter-bar"></div>
+                <p id="instructionFeedbackMsg" class="instruction-feedback-msg"></p>
                 <p class="instruction-hint">Press the highlighted key on the keyboard below.</p>
             </div>
 
@@ -180,6 +182,18 @@
                     <button id="instructionDoneBtn" class="btn-instruction-done">&#10003; Done</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Settings PIN Overlay -->
+    <div id="settingsPinOverlay" class="settings-pin-overlay">
+        <div class="settings-pin-panel">
+            <button id="settingsPinCloseBtn" class="instruction-close-btn" title="Close">&#10005;</button>
+            <h3 class="settings-pin-title">🔒</h3>
+            <p class="settings-pin-subtitle" id="settingsPinSubtitle">Enter PIN to access settings</p>
+            <input type="password" id="settingsPinInput" class="settings-pin-input" placeholder="PIN" maxlength="10" autocomplete="off">
+            <button id="settingsPinSubmitBtn" class="btn-instruction-start">OK</button>
+            <p id="settingsPinError" class="settings-pin-error"></p>
         </div>
     </div>
 
