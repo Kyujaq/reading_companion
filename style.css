@@ -1363,6 +1363,79 @@ h2 {
 .service-status.ok { color: #51cf66; }
 .service-status.err { color: #ff6b6b; }
 
+/* ── Progress Tracker ──────────────────────────────────────────────────────── */
+.progress-badge {
+    font-size: 0.95em;
+    font-weight: bold;
+    color: #764ba2;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #fff5cc 0%, #ffe066 100%);
+    border-radius: 20px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.progress-stats-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 1em;
+    color: #333;
+}
+
+.progress-history-list {
+    margin-bottom: 12px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.progress-empty {
+    color: #999;
+    font-size: 0.9em;
+    text-align: center;
+    padding: 12px 0;
+}
+
+.progress-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88em;
+}
+
+.progress-history-table th {
+    text-align: left;
+    padding: 6px 4px;
+    border-bottom: 2px solid #e0e0e0;
+    color: #764ba2;
+    font-size: 0.9em;
+}
+
+.progress-history-table td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+}
+
+.btn-progress-clear {
+    width: 100%;
+    padding: 10px;
+    background: white;
+    color: #ff6b6b;
+    border: 2px solid #ff6b6b;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+}
+
+.btn-progress-clear:hover {
+    background: #ff6b6b;
+    color: white;
+}
+
 /* ── Responsive tweaks ─────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
     .gallery-grid {

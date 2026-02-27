@@ -13,6 +13,7 @@
             <div class="header-controls">
                 <button id="caseToggleBtn" class="btn-case" title="Switch between uppercase and lowercase">Aa</button>
                 <button id="instructionModeBtn" class="btn-instruction" title="Instruction Mode">🎓 Lessons</button>
+                <span id="progressBadge" class="progress-badge" style="display:none"></span>
                 <span id="ollamaIndicator" class="service-indicator" title="AI Tutor connected" style="display:none">🤖</span>
                 <span id="voskIndicator" class="service-indicator" title="Voice recognition available" style="display:none">🎤</span>
                 <button id="settingsBtn" class="btn-settings" title="Settings">⚙️</button>
@@ -201,6 +202,16 @@
                 <input type="checkbox" id="ollamaToggle" class="settings-toggle">
             </div>
 
+            <h3 class="settings-services-title">📊 Progress</h3>
+            <div class="progress-stats-row">
+                <span>⭐ Stars: <strong id="progressStarsCount">0</strong></span>
+                <span>🔥 <strong id="progressStreakCount">No streak yet</strong></span>
+            </div>
+            <div id="progressHistoryList" class="progress-history-list">
+                <p class="progress-empty">No lessons completed yet. Start a lesson to earn stars!</p>
+            </div>
+            <button id="progressClearBtn" class="btn-progress-clear" type="button">🗑️ Clear History</button>
+
             <h3 class="settings-services-title">Service Status</h3>
             <table class="settings-services-table">
                 <tr>
@@ -220,6 +231,7 @@
     </div>
 
     <script src="script.js?v=4"></script>
+    <script src="progress-tracker.js"></script>
     <script src="instruction-mode.js"></script>
     <script src="gallery.js"></script>
     <script src="vosk-client.js"></script>
@@ -229,9 +241,32 @@
     (async function bootstrap() {
         var app = window.readingCompanionApp;
 
+        // Progress Tracker
+        window.progressTracker = new ProgressTracker();
+
         // Instruction Mode
         window.instructionModeManager = new InstructionModeManager(app);
         window.instructionModeManager.init();
+
+        // Wire progress tracking into lesson completion
+        var origOnComplete = window.instructionModeManager._onLessonComplete.bind(window.instructionModeManager);
+        window.instructionModeManager._onLessonComplete = function(report) {
+            var lesson = window.instructionModeManager.session
+                ? window.instructionModeManager.session.lesson : null;
+            origOnComplete(report);
+            if (lesson) {
+                window.progressTracker.saveSession(report, lesson);
+            }
+        };
+
+        // Clear history button
+        var clearBtn = document.getElementById('progressClearBtn');
+        if (clearBtn) clearBtn.addEventListener('click', function() {
+            window.progressTracker.clearHistory();
+        });
+
+        // Initial display
+        window.progressTracker.updateDisplay();
 
         // Gallery
         window.galleryManager = new GalleryManager(app);
