@@ -211,6 +211,14 @@
                 <label class="settings-radio-label"><input type="radio" name="aiBackend" value="letta"> Letta</label>
             </fieldset>
 
+            <div id="phonemeModeToggleRow" class="settings-row phoneme-toggle-row" style="display:none">
+                <label for="phonemeModeToggle">🔊 Phoneme mode:</label>
+                <label class="switch">
+                    <input type="checkbox" id="phonemeModeToggle">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
             <h3 class="settings-services-title">📊 Progress</h3>
             <div class="progress-stats-row">
                 <span>⭐ Stars: <strong id="progressStarsCount">0</strong></span>
@@ -240,6 +248,10 @@
                 <tr>
                     <td>🎤 Vosk STT</td>
                     <td><span id="voskStatus" class="service-status">Checking&hellip;</span></td>
+                </tr>
+                <tr id="phonemeModeRow" style="display:none">
+                    <td>🔊 Phoneme Mode</td>
+                    <td><span id="phonemeModeStatus" class="service-status">Off</span></td>
                 </tr>
                 <tr>
                     <td>📷 YOLO</td>
@@ -459,6 +471,32 @@
         }
 
         settingsManager.updateServiceStatus();
+
+        // Phoneme mode toggle (only visible when Vosk is available)
+        var phonemeToggleRow = document.getElementById('phonemeModeToggleRow');
+        var phonemeToggle = document.getElementById('phonemeModeToggle');
+        var phonemeModeRow = document.getElementById('phonemeModeRow');
+        if (voskIntegration.available) {
+            if (phonemeToggleRow) phonemeToggleRow.style.display = '';
+            if (phonemeModeRow) phonemeModeRow.style.display = '';
+            if (phonemeToggle) {
+                phonemeToggle.checked = voskIntegration.phonemeMode;
+                phonemeToggle.addEventListener('change', function() {
+                    voskIntegration.setPhonemeMode(phonemeToggle.checked);
+                    var statusEl = document.getElementById('phonemeModeStatus');
+                    if (statusEl) {
+                        statusEl.textContent = phonemeToggle.checked ? '✅ On' : 'Off';
+                        statusEl.className = 'service-status ' + (phonemeToggle.checked ? 'ok' : '');
+                    }
+                });
+                // Set initial status display
+                var statusEl = document.getElementById('phonemeModeStatus');
+                if (statusEl) {
+                    statusEl.textContent = voskIntegration.phonemeMode ? '✅ On' : 'Off';
+                    statusEl.className = 'service-status ' + (voskIntegration.phonemeMode ? 'ok' : '');
+                }
+            }
+        }
 
         var yoloStatus = document.getElementById('yoloServiceStatus');
         if (yoloStatus) {
