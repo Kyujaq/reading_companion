@@ -200,9 +200,16 @@
             </div>
 
             <div class="settings-row">
-                <label for="ollamaToggle">🤖 AI Tutor (Ollama):</label>
-                <input type="checkbox" id="ollamaToggle" class="settings-toggle">
+                <label for="lettaUrlInput">Letta URL:</label>
+                <input type="text" id="lettaUrlInput" class="settings-text-input" placeholder="http://localhost:8283" maxlength="80">
             </div>
+
+            <fieldset class="settings-radio-group">
+                <legend>🤖 AI Tutor:</legend>
+                <label class="settings-radio-label"><input type="radio" name="aiBackend" value="none" checked> None</label>
+                <label class="settings-radio-label"><input type="radio" name="aiBackend" value="ollama"> Ollama</label>
+                <label class="settings-radio-label"><input type="radio" name="aiBackend" value="letta"> Letta</label>
+            </fieldset>
 
             <h3 class="settings-services-title">📊 Progress</h3>
             <div class="progress-stats-row">
@@ -224,6 +231,10 @@
                 <tr>
                     <td>🤖 Ollama</td>
                     <td><span id="ollamaStatus" class="service-status">Checking&hellip;</span></td>
+                </tr>
+                <tr>
+                    <td>🧠 Letta</td>
+                    <td><span id="lettaStatus" class="service-status">Checking&hellip;</span></td>
                 </tr>
                 <tr>
                     <td>🎤 Vosk STT</td>
@@ -286,6 +297,7 @@
     <script src="gallery.js"></script>
     <script src="vosk-client.js"></script>
     <script src="ollama-coach.js"></script>
+    <script src="letta-agent.js"></script>
     <script src="yolo-camera.js"></script>
     <script>
     (async function bootstrap() {
@@ -385,8 +397,9 @@
         window.galleryManager = new GalleryManager(app);
         window.galleryManager.init();
 
-        // Ollama + Vosk + YOLO
+        // Ollama + Letta + Vosk + YOLO
         var ollamaCoach = new OllamaCoach();
+        var lettaAgent = new LettaAgent();
         var voskIntegration = new VoskIntegration();
         var yoloManager = new YoloCameraManager(app);
 
@@ -394,7 +407,8 @@
         var settingsManager = new SettingsManager(
             ollamaCoach,
             voskIntegration,
-            window.instructionModeManager.feedback
+            window.instructionModeManager.feedback,
+            lettaAgent
         );
         settingsManager.init();
 
@@ -422,7 +436,8 @@
         var results = await Promise.all([
             ollamaCoach.checkAvailability(),
             voskIntegration.init(window.instructionModeManager),
-            yoloManager.checkAvailability()
+            yoloManager.checkAvailability(),
+            lettaAgent.checkAvailability()
         ]);
         var yoloOk = results[2];
 

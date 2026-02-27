@@ -1338,6 +1338,35 @@ h2 {
     accent-color: #667eea;
 }
 
+.settings-radio-group {
+    border: 2px solid #e8e0f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+}
+
+.settings-radio-group legend {
+    font-size: 1em;
+    color: #333;
+    padding: 0 6px;
+    font-weight: 600;
+}
+
+.settings-radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 12px;
+    font-size: 0.95em;
+    color: #333;
+    cursor: pointer;
+}
+
+.settings-radio-label input[type="radio"] {
+    accent-color: #667eea;
+    cursor: pointer;
+}
+
 .settings-services-title {
     color: #764ba2;
     margin: 20px 0 12px;
