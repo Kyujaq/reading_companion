@@ -194,7 +194,8 @@ class YoloCameraManager {
 
         let text;
         if (lang === 'fr') {
-            text = `Super ! Je vois ${count} chose${count > 1 ? 's' : ''} ! J'aperçois ${first}${second ? ` et ${second}` : ''} ! Tu veux apprendre à écrire ${first} ?`;
+            const choseStr = count === 1 ? 'une chose' : `${count} choses`;
+            text = `Super ! Je vois ${choseStr} ! J'aperçois ${first}${second ? ` et ${second}` : ''} ! Tu veux apprendre à écrire ${first} ?`;
         } else {
             text = `Wow! I can see ${count} thing${count > 1 ? 's' : ''}! I spy a ${first}${second ? ` and a ${second}` : ''}! Do you want to learn how to spell ${first}?`;
         }

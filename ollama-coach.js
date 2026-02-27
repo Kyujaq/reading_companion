@@ -1,6 +1,6 @@
 // Phase 4 — Ollama LLM Coach
 
-const OLLAMA_BASE = 'http://192.168.2.205:11434';
+const OLLAMA_DEFAULT_URL = 'http://192.168.2.205:11434';
 const OLLAMA_TIMEOUT_MS = 3000;
 const PREFERRED_MODELS = ['llama3', 'mistral', 'phi3'];
 
@@ -9,13 +9,16 @@ class OllamaCoach {
         this.available = false;
         this.model = null;
         this.childName = '';
+        this.baseUrl = localStorage.getItem('ollamaUrl') || OLLAMA_DEFAULT_URL;
     }
+
+    get _base() { return this.baseUrl.replace(/\/$/, ''); }
 
     async checkAvailability() {
         try {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
-            const resp = await fetch(`${OLLAMA_BASE}/api/tags`, { signal: controller.signal });
+            const resp = await fetch(`${this._base}/api/tags`, { signal: controller.signal });
             clearTimeout(timer);
             if (!resp.ok) return false;
             const data = await resp.json();
@@ -43,7 +46,7 @@ class OllamaCoach {
         try {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
-            const resp = await fetch(`${OLLAMA_BASE}/api/generate`, {
+            const resp = await fetch(`${this._base}/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 signal: controller.signal,
@@ -116,6 +119,18 @@ class SettingsManager {
                     this.feedbackEngine.ollamaCoach = this.ollamaCoach;
                 } else {
                     this.feedbackEngine.ollamaCoach = null;
+                }
+            });
+        }
+
+        const urlInput = document.getElementById('ollamaUrlInput');
+        if (urlInput) {
+            urlInput.value = this.ollamaCoach.baseUrl;
+            urlInput.addEventListener('change', () => {
+                const url = urlInput.value.trim();
+                if (url) {
+                    this.ollamaCoach.baseUrl = url;
+                    localStorage.setItem('ollamaUrl', url);
                 }
             });
         }
