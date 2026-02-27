@@ -528,6 +528,11 @@ h2 {
     user-select: none;
 }
 
+.word-builder-slots .wb-placeholder {
+    color: #aaa;
+    font-size: 0.7em;
+}
+
 .word-builder-controls {
     display: flex;
     flex-direction: column;

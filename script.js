@@ -2,6 +2,8 @@
 
 // Configuration constants
 const LEARNING_SPEECH_RATE = 0.8;
+const GUIDED_EXAMPLE_ROTATION_MS = 6000;
+const CELEBRATION_EMOJI_COUNT = 8;
 
 class ReadingCompanion {
     constructor() {
@@ -817,7 +819,7 @@ class ReadingCompanion {
         this.guidedExampleTimer = setInterval(() => {
             this.guidedExampleIndex++;
             this.showGuidedExample();
-        }, 6000);
+        }, GUIDED_EXAMPLE_ROTATION_MS);
     }
     
     showGuidedExample() {
@@ -835,7 +837,7 @@ class ReadingCompanion {
     triggerCelebration() {
         const overlay = document.getElementById('celebrationOverlay');
         const emojis = ['⭐', '🌟', '✨', '🎉', '👏', '🏆'];
-        const count = 8;
+        const count = CELEBRATION_EMOJI_COUNT;
         
         for (let i = 0; i < count; i++) {
             const star = document.createElement('span');
@@ -902,7 +904,7 @@ class ReadingCompanion {
         slotsEl.innerHTML = '';
         
         if (this.wordBuilderSyllables.length === 0) {
-            slotsEl.innerHTML = `<span style="color:#aaa;font-size:0.7em">${this.currentLanguage === 'fr' ? 'Clique sur les syllabes pour construire un mot' : 'Click syllables to build a word'}</span>`;
+            slotsEl.innerHTML = `<span class="wb-placeholder">${this.currentLanguage === 'fr' ? 'Clique sur les syllabes pour construire un mot' : 'Click syllables to build a word'}</span>`;
             return;
         }
         
