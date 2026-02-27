@@ -2,6 +2,8 @@
 
 // Configuration constants
 const LEARNING_SPEECH_RATE = 0.8;
+const GUIDED_EXAMPLE_ROTATION_MS = 6000;
+const CELEBRATION_EMOJI_COUNT = 8;
 
 class ReadingCompanion {
     constructor() {
@@ -15,6 +17,16 @@ class ReadingCompanion {
         this.firstBox = '';
         this.secondBox = '';
         this.syllableHistory = [];
+        
+        // Uppercase/lowercase state
+        this.useUppercase = false;
+        
+        // Word builder state
+        this.wordBuilderSyllables = [];
+        
+        // Guided example rotation
+        this.guidedExampleIndex = 0;
+        this.guidedExampleTimer = null;
         
         // Track currently playing sounds to prevent overlap
         this.currentSoundPromise = Promise.resolve();
@@ -41,6 +53,92 @@ class ReadingCompanion {
         this.consonantDigraphs = {
             fr: ['ch', 'gn'],
             en: ['ch', 'sh', 'th', 'ph', 'wh']
+        };
+        
+        // Phonetic sound hints for letter keys
+        this.phoneticHints = {
+            en: {
+                'a': 'ah', 'b': 'buh', 'c': 'kuh', 'd': 'duh', 'e': 'eh',
+                'f': 'fuh', 'g': 'guh', 'h': 'huh', 'i': 'ih', 'j': 'juh',
+                'k': 'kuh', 'l': 'luh', 'm': 'muh', 'n': 'nuh', 'o': 'oh',
+                'p': 'puh', 'q': 'kwuh', 'r': 'ruh', 's': 'sss', 't': 'tuh',
+                'u': 'uh', 'v': 'vuh', 'w': 'wuh', 'x': 'ks', 'y': 'yuh', 'z': 'zzz',
+                'ch': 'chuh', 'sh': 'shh', 'th': 'thh', 'ph': 'fuh', 'wh': 'wuh',
+                'ou': 'ow', 'au': 'aw', 'ai': 'ay', 'ei': 'ee', 'oi': 'oy',
+                'oo': 'ooh', 'ee': 'eeh', 'ea': 'eeh'
+            },
+            fr: {
+                'a': 'ah', 'b': 'be', 'c': 'ke', 'd': 'de', 'e': 'eu',
+                'f': 'fe', 'g': 'gue', 'h': '...', 'i': 'ee', 'j': 'je',
+                'k': 'ke', 'l': 'le', 'm': 'me', 'n': 'ne', 'o': 'oh',
+                'p': 'pe', 'q': 'ke', 'r': 're', 's': 'se', 't': 'te',
+                'u': 'uu', 'v': 've', 'w': 've', 'x': 'ks', 'y': 'ee', 'z': 'ze',
+                'é': 'ay', 'è': 'eh', 'ê': 'eh', 'ç': 'se',
+                'ch': 'che', 'gn': 'nye',
+                'ou': 'oo', 'au': 'oh', 'ai': 'eh', 'oi': 'wa',
+                'an': 'ã', 'en': 'ã', 'in': 'ẽ', 'ain': 'ẽ', 'un': 'œ̃', 'on': 'õ',
+                'io': 'yo', 'ien': 'yẽ', 'ienne': 'yen', 'er': 'ay', 'et': 'ay', 'ez': 'ay'
+            }
+        };
+        
+        // Guided examples for each language
+        this.guidedExamples = {
+            en: [
+                '💡 Try: B + A = BA', '💡 Try: M + A = MA', '💡 Try: D + O = DO',
+                '💡 Try: S + I = SI', '💡 Try: C + A = CA', '💡 Try: P + A = PA'
+            ],
+            fr: [
+                '💡 Essaie : B + A = BA', '💡 Essaie : M + A = MA', '💡 Essaie : F + A = FA',
+                '💡 Essaie : P + I = PI', '💡 Essaie : L + U = LU', '💡 Essaie : S + O = SO'
+            ]
+        };
+        
+        // Syllable breakdowns for words (improvement #7)
+        this.wordSyllables = {
+            en: {
+                'cat': ['cat'], 'dog': ['dog'], 'hat': ['hat'], 'bat': ['bat'],
+                'sun': ['sun'], 'moon': ['moon'], 'star': ['star'], 'tree': ['tree'],
+                'book': ['book'], 'pen': ['pen'], 'cup': ['cup'], 'ball': ['ball'],
+                'fish': ['fish'], 'bird': ['bird'], 'hand': ['hand'], 'foot': ['foot'],
+                'head': ['head'], 'nose': ['nose'], 'eyes': ['eyes'], 'ears': ['ears'],
+                'baby': ['ba', 'by'], 'mama': ['ma', 'ma'], 'papa': ['pa', 'pa'], 'home': ['home'],
+                'bike': ['bike'], 'cake': ['cake'], 'game': ['game'], 'name': ['name'],
+                'rose': ['rose'], 'lake': ['lake'], 'duck': ['duck'], 'frog': ['frog'],
+                'milk': ['milk'], 'rice': ['rice'], 'soup': ['soup'], 'rain': ['rain']
+            },
+            fr: {
+                'chat': ['chat'], 'chien': ['chien'], 'maison': ['mai', 'son'],
+                'soleil': ['so', 'leil'], 'lune': ['lu', 'ne'], 'étoile': ['é', 'toi', 'le'],
+                'arbre': ['ar', 'bre'], 'livre': ['li', 'vre'], 'stylo': ['sty', 'lo'],
+                'tasse': ['ta', 'sse'], 'balle': ['ba', 'lle'], 'poisson': ['poi', 'sson'],
+                'oiseau': ['oi', 'seau'], 'main': ['main'], 'pied': ['pied'],
+                'tête': ['tê', 'te'], 'nez': ['nez'], 'yeux': ['yeux'],
+                'oreille': ['o', 'rei', 'lle'], 'bébé': ['bé', 'bé'],
+                'maman': ['ma', 'man'], 'papa': ['pa', 'pa'], 'école': ['é', 'co', 'le'],
+                'vélo': ['vé', 'lo'], 'jupe': ['ju', 'pe'], 'robe': ['ro', 'be'],
+                'fête': ['fê', 'te'], 'lait': ['lait'], 'eau': ['eau'],
+                'pain': ['pain'], 'riz': ['riz'], 'soupe': ['sou', 'pe'],
+                'pluie': ['pluie'], 'vent': ['vent'], 'ciel': ['ciel'],
+                'fleur': ['fleur'], 'jour': ['jour'], 'nuit': ['nuit']
+            }
+        };
+        
+        // Word builder guided words (syllable combos that make words)
+        this.wordBuilderGuides = {
+            en: [
+                { syllables: ['ma', 'ma'], word: 'mama' },
+                { syllables: ['pa', 'pa'], word: 'papa' },
+                { syllables: ['ba', 'by'], word: 'baby' }
+            ],
+            fr: [
+                { syllables: ['ma', 'ma'], word: 'mama' },
+                { syllables: ['pa', 'pa'], word: 'papa' },
+                { syllables: ['bé', 'bé'], word: 'bébé' },
+                { syllables: ['vé', 'lo'], word: 'vélo' },
+                { syllables: ['ju', 'pe'], word: 'jupe' },
+                { syllables: ['ro', 'be'], word: 'robe' },
+                { syllables: ['é', 'co', 'le'], word: 'école' }
+            ]
         };
         
         // Map French letters/sounds to audio files
@@ -257,7 +355,9 @@ class ReadingCompanion {
                            'za', 'ze', 'zi', 'zo', 'zu'],
                 words: ['cat', 'dog', 'hat', 'bat', 'sun', 'moon', 'star', 'tree', 
                        'book', 'pen', 'cup', 'ball', 'fish', 'bird', 'hand', 'foot',
-                       'head', 'nose', 'eyes', 'ears', 'baby', 'mama', 'papa', 'home'],
+                       'head', 'nose', 'eyes', 'ears', 'baby', 'mama', 'papa', 'home',
+                       'bike', 'cake', 'game', 'name', 'rose', 'lake', 'duck', 'frog',
+                       'milk', 'rice', 'soup', 'rain'],
                 stories: [
                     {
                         title: 'The Cat',
@@ -290,7 +390,10 @@ class ReadingCompanion {
                 ],
                 words: ['chat', 'chien', 'maison', 'soleil', 'lune', 'étoile', 'arbre',
                        'livre', 'stylo', 'tasse', 'balle', 'poisson', 'oiseau', 'main',
-                       'pied', 'tête', 'nez', 'yeux', 'oreille', 'bébé', 'maman', 'papa', 'école'],
+                       'pied', 'tête', 'nez', 'yeux', 'oreille', 'bébé', 'maman', 'papa', 'école',
+                       'vélo', 'jupe', 'robe', 'fête', 'lait', 'eau',
+                       'pain', 'riz', 'soupe', 'pluie', 'vent', 'ciel',
+                       'fleur', 'jour', 'nuit'],
                 stories: [
                     {
                         title: 'Le Chat',
@@ -323,10 +426,15 @@ class ReadingCompanion {
         this.setupEventListeners();
         
         // Render initial UI
+        this.renderAlphabetStrip();
         this.renderSyllableBuilder();
         this.renderSyllables();
+        this.renderWordBuilder();
         this.renderWordBank();
         this.renderStorySelect();
+        
+        // Start guided examples
+        this.startGuidedExamples();
         
         // Add keyboard support for physical keyboard
         this.setupKeyboardInput();
@@ -355,6 +463,19 @@ class ReadingCompanion {
         // Story select
         document.getElementById('storySelect').addEventListener('change', (e) => {
             this.displayStory(e.target.value);
+        });
+        
+        // Uppercase/lowercase toggle
+        document.getElementById('caseToggleBtn').addEventListener('click', () => {
+            this.toggleCase();
+        });
+        
+        // Word builder controls
+        document.getElementById('wordBuilderPlayBtn').addEventListener('click', () => {
+            this.playWordBuilder();
+        });
+        document.getElementById('wordBuilderClearBtn').addEventListener('click', () => {
+            this.clearWordBuilder();
         });
     }
 
@@ -390,11 +511,14 @@ class ReadingCompanion {
         langBtn.classList.add('active');
         
         // Re-render UI for new language
+        this.renderAlphabetStrip();
         this.renderSyllableBuilder();
         this.renderSyllables();
+        this.renderWordBuilder();
         this.renderWordBank();
         this.renderStorySelect();
         this.clearSyllableBuilder();
+        this.startGuidedExamples();
     }
 
     renderSyllableBuilder() {
@@ -408,12 +532,15 @@ class ReadingCompanion {
         const consonantDigraphsList = this.consonantDigraphs[this.currentLanguage] || [];
         const vowelsList = this.vowels[this.currentLanguage];
         const complexVowelsList = this.complexVowels[this.currentLanguage] || [];
+        const hints = this.phoneticHints[this.currentLanguage] || {};
         
         // Render consonants (including digraphs)
         [...consonantsList, ...consonantDigraphsList].forEach(consonant => {
             const key = document.createElement('button');
             key.className = 'key consonant';
-            key.textContent = consonant;
+            const displayText = this.applyCase(consonant);
+            const hint = hints[consonant] || '';
+            key.innerHTML = `<span>${displayText}</span>${hint ? `<span class="phonetic-hint">${hint}</span>` : ''}`;
             key.setAttribute('data-letter', consonant);
             
             key.addEventListener('click', () => {
@@ -427,7 +554,9 @@ class ReadingCompanion {
         [...vowelsList, ...complexVowelsList].forEach(vowel => {
             const key = document.createElement('button');
             key.className = 'key vowel';
-            key.textContent = vowel;
+            const displayText = this.applyCase(vowel);
+            const hint = hints[vowel] || '';
+            key.innerHTML = `<span>${displayText}</span>${hint ? `<span class="phonetic-hint">${hint}</span>` : ''}`;
             key.setAttribute('data-letter', vowel);
             
             key.addEventListener('click', () => {
@@ -478,9 +607,17 @@ class ReadingCompanion {
     updateBuilderBoxes() {
         const firstBoxEl = document.getElementById('consonantBox');
         const secondBoxEl = document.getElementById('vowelBox');
+        const resultBoxEl = document.getElementById('resultBox');
         
-        firstBoxEl.textContent = this.firstBox;
-        secondBoxEl.textContent = this.secondBox;
+        firstBoxEl.textContent = this.applyCase(this.firstBox);
+        secondBoxEl.textContent = this.applyCase(this.secondBox);
+        
+        // Show result when both boxes are filled
+        if (this.firstBox && this.secondBox) {
+            resultBoxEl.textContent = this.applyCase(this.firstBox + this.secondBox);
+        } else {
+            resultBoxEl.textContent = '';
+        }
         
         // Add filled class for animation
         if (this.firstBox) {
@@ -510,16 +647,37 @@ class ReadingCompanion {
                 this.updateHistoryDisplay();
             }, 2000);
             
-            this.playSound(syllable, () => {
-                // Clear the fallback timeout since audio completed
-                clearTimeout(timeoutId);
-                // After reading, move to history and clear boxes
-                this.syllableHistory.push(syllable);
-                this.consonantBox = '';
-                this.vowelBox = '';
-                this.updateBuilderBoxes();
-                this.updateHistoryDisplay();
-
+            // Wait for the letter sound to complete before playing the syllable
+            // Use the passed promise which represents the sound that was just played
+            letterSoundPromise.then(() => {
+                // Small delay to create clear separation between letter sound and syllable sound
+                setTimeout(() => {
+                    // Read the syllable (not spell it) - with a short timeout
+                    // If audio takes too long, we'll move to history anyway
+                    const timeoutId = setTimeout(() => {
+                        // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
+                        this.syllableHistory.push(syllable);
+                        this.firstBox = '';
+                        this.secondBox = '';
+                        this.updateBuilderBoxes();
+                        this.updateHistoryDisplay();
+                        this.triggerCelebration();
+                        this.checkAutoWordDetection();
+                    }, 2000);
+                    
+                    this.playSound(syllable, () => {
+                        // Clear the fallback timeout since audio completed
+                        clearTimeout(timeoutId);
+                        // After reading, move to history and clear boxes
+                        this.syllableHistory.push(syllable);
+                        this.firstBox = '';
+                        this.secondBox = '';
+                        this.updateBuilderBoxes();
+                        this.updateHistoryDisplay();
+                        this.triggerCelebration();
+                        this.checkAutoWordDetection();
+                    });
+                }, 300); // Increased delay for clearer separation
             });
         }
     }
@@ -529,9 +687,16 @@ class ReadingCompanion {
         historyDisplay.innerHTML = '';
         
         this.syllableHistory.forEach((syllable, index) => {
+            if (index > 0) {
+                const plus = document.createElement('span');
+                plus.className = 'history-plus';
+                plus.textContent = '+';
+                historyDisplay.appendChild(plus);
+            }
+            
             const span = document.createElement('span');
             span.className = 'history-item';
-            span.textContent = syllable;
+            span.textContent = this.applyCase(syllable);
             
             span.addEventListener('click', () => {
                 this.playSound(syllable);
@@ -558,7 +723,7 @@ class ReadingCompanion {
         syllables.forEach(syllable => {
             const btn = document.createElement('button');
             btn.className = 'syllable-btn';
-            btn.textContent = syllable;
+            btn.textContent = this.applyCase(syllable);
             
             btn.addEventListener('click', () => {
                 this.playSound(syllable);
@@ -573,11 +738,21 @@ class ReadingCompanion {
         wordBank.innerHTML = '';
         
         const words = this.languageData[this.currentLanguage].words;
+        const syllableMap = this.wordSyllables[this.currentLanguage] || {};
         
         words.forEach(word => {
             const btn = document.createElement('button');
             btn.className = 'word-btn';
-            btn.textContent = word;
+            
+            const syllables = syllableMap[word];
+            const displayWord = this.applyCase(word);
+            
+            if (syllables && syllables.length > 1) {
+                const breakdown = syllables.map(s => this.applyCase(s)).join('·');
+                btn.innerHTML = `<span>${displayWord}</span><span class="syllable-breakdown">${breakdown}</span>`;
+            } else {
+                btn.textContent = displayWord;
+            }
             
             btn.addEventListener('click', () => {
                 this.playSound(word);
@@ -585,6 +760,237 @@ class ReadingCompanion {
             
             wordBank.appendChild(btn);
         });
+    }
+
+    // === NEW METHODS FOR IMPROVEMENTS ===
+    
+    // Improvement #2: Uppercase/lowercase toggle
+    toggleCase() {
+        this.useUppercase = !this.useUppercase;
+        const btn = document.getElementById('caseToggleBtn');
+        btn.classList.toggle('uppercase', this.useUppercase);
+        btn.textContent = this.useUppercase ? 'AA' : 'Aa';
+        
+        // Re-render affected components
+        this.renderAlphabetStrip();
+        this.renderSyllableBuilder();
+        this.renderSyllables();
+        this.renderWordBuilder();
+        this.renderWordBank();
+        this.updateBuilderBoxes();
+        this.updateHistoryDisplay();
+    }
+    
+    applyCase(text) {
+        if (!text) return text;
+        return this.useUppercase ? text.toUpperCase() : text;
+    }
+    
+    // Improvement #10: Alphabet reference strip
+    renderAlphabetStrip() {
+        const strip = document.getElementById('alphabetStrip');
+        strip.innerHTML = '';
+        
+        const vowelsList = this.vowels[this.currentLanguage];
+        const consonantsList = this.consonants[this.currentLanguage];
+        const hints = this.phoneticHints[this.currentLanguage] || {};
+        const allLetters = this.languageData[this.currentLanguage].letters;
+        
+        allLetters.forEach(letter => {
+            const el = document.createElement('div');
+            const isVowel = vowelsList.includes(letter);
+            el.className = `alphabet-letter ${isVowel ? 'vowel-letter' : 'consonant-letter'}`;
+            
+            const charSpan = document.createElement('span');
+            charSpan.className = 'letter-char';
+            charSpan.textContent = this.applyCase(letter);
+            
+            const soundSpan = document.createElement('span');
+            soundSpan.className = 'letter-sound';
+            soundSpan.textContent = hints[letter] || '';
+            
+            el.appendChild(charSpan);
+            el.appendChild(soundSpan);
+            
+            el.addEventListener('click', () => {
+                el.classList.add('playing');
+                this.playSound(letter, () => {
+                    el.classList.remove('playing');
+                });
+            });
+            
+            strip.appendChild(el);
+        });
+    }
+    
+    // Improvement #4: Guided example prompts
+    startGuidedExamples() {
+        if (this.guidedExampleTimer) {
+            clearInterval(this.guidedExampleTimer);
+        }
+        
+        this.guidedExampleIndex = 0;
+        this.showGuidedExample();
+        
+        this.guidedExampleTimer = setInterval(() => {
+            this.guidedExampleIndex++;
+            this.showGuidedExample();
+        }, GUIDED_EXAMPLE_ROTATION_MS);
+    }
+    
+    showGuidedExample() {
+        const el = document.getElementById('guidedExample');
+        const examples = this.guidedExamples[this.currentLanguage];
+        const index = this.guidedExampleIndex % examples.length;
+        el.textContent = examples[index];
+        el.style.animation = 'none';
+        // Force reflow
+        void el.offsetHeight;
+        el.style.animation = 'fadeInExample 0.5s ease-in';
+    }
+    
+    // Improvement #5: Celebration animations
+    triggerCelebration() {
+        const overlay = document.getElementById('celebrationOverlay');
+        const emojis = ['⭐', '🌟', '✨', '🎉', '👏', '🏆'];
+        const count = CELEBRATION_EMOJI_COUNT;
+        
+        for (let i = 0; i < count; i++) {
+            const star = document.createElement('span');
+            star.className = 'celebration-star';
+            star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = `${15 + Math.random() * 70}%`;
+            star.style.top = `${20 + Math.random() * 40}%`;
+            star.style.animationDelay = `${Math.random() * 0.3}s`;
+            overlay.appendChild(star);
+        }
+        
+        // Clean up after animation
+        setTimeout(() => {
+            overlay.innerHTML = '';
+        }, 1600);
+    }
+    
+    // Improvement #6: Word Builder from syllables
+    renderWordBuilder() {
+        const syllablesContainer = document.getElementById('wordBuilderSyllables');
+        const exampleEl = document.getElementById('wordBuilderExample');
+        syllablesContainer.innerHTML = '';
+        
+        // Show an example
+        const guides = this.wordBuilderGuides[this.currentLanguage];
+        if (guides.length > 0) {
+            const guide = guides[Math.floor(Math.random() * guides.length)];
+            const parts = guide.syllables.map(s => this.applyCase(s)).join(' + ');
+            exampleEl.textContent = `💡 ${parts} = ${this.applyCase(guide.word)}`;
+        }
+        
+        // Get unique syllables from all guided words
+        const syllableSet = new Set();
+        guides.forEach(g => g.syllables.forEach(s => syllableSet.add(s)));
+        
+        // Also add common syllables from the language data
+        const commonSyllables = this.languageData[this.currentLanguage].syllables.slice(0, 20);
+        commonSyllables.forEach(s => syllableSet.add(s));
+        
+        syllableSet.forEach(syllable => {
+            const btn = document.createElement('button');
+            btn.className = 'syllable-btn';
+            btn.textContent = this.applyCase(syllable);
+            
+            btn.addEventListener('click', () => {
+                this.addToWordBuilder(syllable);
+                this.playSound(syllable);
+            });
+            
+            syllablesContainer.appendChild(btn);
+        });
+        
+        this.updateWordBuilderDisplay();
+    }
+    
+    addToWordBuilder(syllable) {
+        this.wordBuilderSyllables.push(syllable);
+        this.updateWordBuilderDisplay();
+        this.checkWordBuilderMatch();
+    }
+    
+    updateWordBuilderDisplay() {
+        const slotsEl = document.getElementById('wordBuilderSlots');
+        slotsEl.innerHTML = '';
+        
+        if (this.wordBuilderSyllables.length === 0) {
+            slotsEl.innerHTML = `<span class="wb-placeholder">${this.currentLanguage === 'fr' ? 'Clique sur les syllabes pour construire un mot' : 'Click syllables to build a word'}</span>`;
+            return;
+        }
+        
+        this.wordBuilderSyllables.forEach((syllable, index) => {
+            if (index > 0) {
+                const plus = document.createElement('span');
+                plus.className = 'wb-plus';
+                plus.textContent = '+';
+                slotsEl.appendChild(plus);
+            }
+            
+            const span = document.createElement('span');
+            span.className = 'wb-syllable';
+            span.textContent = this.applyCase(syllable);
+            span.title = this.currentLanguage === 'fr' ? 'Clique pour retirer' : 'Click to remove';
+            span.addEventListener('click', () => {
+                this.wordBuilderSyllables.splice(index, 1);
+                this.updateWordBuilderDisplay();
+                this.checkWordBuilderMatch();
+            });
+            slotsEl.appendChild(span);
+        });
+    }
+    
+    checkWordBuilderMatch() {
+        const resultEl = document.getElementById('wordBuilderResult');
+        const combined = this.wordBuilderSyllables.join('').toLowerCase();
+        const words = this.languageData[this.currentLanguage].words;
+        
+        const match = words.find(w => w.toLowerCase() === combined);
+        if (match) {
+            resultEl.textContent = `🎉 ${this.applyCase(match)} !`;
+            this.triggerCelebration();
+            this.playSound(match);
+        } else {
+            resultEl.textContent = '';
+        }
+    }
+    
+    playWordBuilder() {
+        if (this.wordBuilderSyllables.length === 0) return;
+        const combined = this.wordBuilderSyllables.join('');
+        this.playSound(combined);
+    }
+    
+    clearWordBuilder() {
+        this.wordBuilderSyllables = [];
+        this.updateWordBuilderDisplay();
+        document.getElementById('wordBuilderResult').textContent = '';
+    }
+    
+    // Improvement #8: Auto word detection in history
+    checkAutoWordDetection() {
+        if (this.syllableHistory.length === 0) return;
+        
+        const historyText = this.syllableHistory.join('').toLowerCase();
+        const words = this.languageData[this.currentLanguage].words;
+        
+        const match = words.find(w => w.toLowerCase() === historyText);
+        if (match) {
+            // Highlight all history items
+            const historyItems = document.querySelectorAll('.history-item');
+            historyItems.forEach(item => item.classList.add('word-detected'));
+            
+            // Announce the detected word after a short delay
+            setTimeout(() => {
+                this.triggerCelebration();
+                this.playSound(match);
+            }, 500);
+        }
     }
 
     renderStorySelect() {

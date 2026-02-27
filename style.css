@@ -29,6 +29,12 @@ header {
     gap: 15px;
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 h1 {
     color: #667eea;
     font-size: 2.5em;
@@ -75,17 +81,133 @@ h2 {
     font-size: 1.2em;
 }
 
+/* Uppercase/Lowercase Toggle */
+.btn-case {
+    padding: 10px 18px;
+    border: 2px solid #764ba2;
+    background: white;
+    color: #764ba2;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-case:hover {
+    background: #764ba2;
+    color: white;
+    transform: scale(1.05);
+}
+
+.btn-case.uppercase {
+    background: #764ba2;
+    color: white;
+}
+
+/* Alphabet Reference Strip */
+.alphabet-section {
+    margin-bottom: 30px;
+}
+
+.alphabet-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+
+.alphabet-letter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 56px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.alphabet-letter.consonant-letter {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.alphabet-letter.vowel-letter {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.alphabet-letter:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.alphabet-letter .letter-char {
+    font-size: 1.3em;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.alphabet-letter .letter-sound {
+    font-size: 0.55em;
+    opacity: 0.85;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.alphabet-letter.playing {
+    animation: pulse 0.4s ease-in-out;
+    box-shadow: 0 0 12px rgba(255, 215, 61, 0.8);
+}
+
 /* Syllable Builder Section */
 .syllable-builder-section {
     margin-bottom: 30px;
 }
 
+/* Guided Example */
+.guided-example {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #667eea;
+    font-weight: 500;
+    min-height: 1.5em;
+    animation: fadeInExample 0.5s ease-in;
+}
+
+@keyframes fadeInExample {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .syllable-builder {
     display: grid;
-    grid-template-columns: 1fr 150px 150px 1fr;
+    grid-template-columns: 1fr auto 1fr;
     gap: 15px;
     margin-bottom: 20px;
     align-items: start;
+}
+
+/* Formula Display */
+.formula-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+.formula-operator {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #667eea;
+    user-select: none;
 }
 
 .consonants-column,
@@ -108,13 +230,13 @@ h2 {
 }
 
 .builder-box {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4em;
+    font-size: 3em;
     font-weight: bold;
     color: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -127,6 +249,11 @@ h2 {
 
 .blue-box {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.result-box {
+    background: linear-gradient(135deg, #51cf66 0%, #20c997 100%);
+    min-width: 120px;
 }
 
 .builder-box.filled {
@@ -181,6 +308,18 @@ h2 {
     background: #51cf66;
     color: white;
     animation: pulse 0.5s ease-in-out;
+}
+
+.history-item.word-detected {
+    background: #ffd93d;
+    color: #333;
+    box-shadow: 0 0 10px rgba(255, 217, 61, 0.6);
+}
+
+.history-plus {
+    font-size: 0.7em;
+    color: #999;
+    user-select: none;
 }
 
 .history-buttons {
@@ -244,11 +383,19 @@ h2 {
     transition: all 0.2s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+}
+
+.key .phonetic-hint {
+    font-size: 0.45em;
+    opacity: 0.8;
+    font-weight: normal;
+    margin-top: 2px;
 }
 
 .key.vowel {
@@ -305,6 +452,101 @@ h2 {
     transform: translateY(0);
 }
 
+/* Word Builder from Syllables */
+.word-builder-section {
+    margin-bottom: 30px;
+}
+
+.word-builder-example {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 1.15em;
+    color: #764ba2;
+    font-weight: 500;
+}
+
+.word-builder-area {
+    background: #f8f0ff;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.word-builder-syllables {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.word-builder-syllables .syllable-btn {
+    padding: 10px 16px;
+    font-size: 1.1em;
+}
+
+.word-builder-workspace {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.word-builder-slots {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 60px;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #333;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.word-builder-slots .wb-syllable {
+    display: inline-block;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.word-builder-slots .wb-syllable:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+
+.word-builder-slots .wb-plus {
+    color: #999;
+    font-size: 0.7em;
+    user-select: none;
+}
+
+.word-builder-slots .wb-placeholder {
+    color: #aaa;
+    font-size: 0.7em;
+}
+
+.word-builder-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.word-builder-result {
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #51cf66;
+    min-height: 1.5em;
+}
+
 /* Word Bank */
 .words-section {
     margin-bottom: 30px;
@@ -312,12 +554,12 @@ h2 {
 
 .word-bank {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 12px;
 }
 
 .word-btn {
-    padding: 18px;
+    padding: 14px 12px;
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: white;
     border: none;
@@ -330,6 +572,17 @@ h2 {
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.word-btn .syllable-breakdown {
+    font-size: 0.65em;
+    opacity: 0.9;
+    font-weight: normal;
+    letter-spacing: 1px;
 }
 
 .word-btn:hover {
@@ -403,6 +656,39 @@ h2 {
     50% { transform: scale(1.1); }
 }
 
+/* Celebration Overlay */
+.celebration-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.celebration-star {
+    position: absolute;
+    font-size: 2em;
+    animation: starFall 1.2s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes starFall {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(0.5) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-60px) scale(1.2) rotate(180deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.3) rotate(360deg);
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
@@ -418,10 +704,19 @@ h2 {
         gap: 20px;
     }
 
+    .formula-display {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
     .builder-box {
-        width: 120px;
-        height: 120px;
-        font-size: 3em;
+        width: 100px;
+        height: 100px;
+        font-size: 2.5em;
+    }
+
+    .formula-operator {
+        font-size: 2em;
     }
 
     .keyboard-column {
@@ -441,6 +736,23 @@ h2 {
     .story-display {
         font-size: 1.1em;
     }
+
+    .alphabet-letter {
+        width: 40px;
+        height: 48px;
+    }
+
+    .alphabet-letter .letter-char {
+        font-size: 1.1em;
+    }
+
+    .word-builder-workspace {
+        flex-direction: column;
+    }
+
+    .word-builder-controls {
+        flex-direction: row;
+    }
 }
 
 @media (max-width: 480px) {
@@ -449,9 +761,13 @@ h2 {
     }
 
     .builder-box {
-        width: 100px;
-        height: 100px;
-        font-size: 2.5em;
+        width: 80px;
+        height: 80px;
+        font-size: 2em;
+    }
+
+    .formula-operator {
+        font-size: 1.5em;
     }
 
     .keyboard-column {
@@ -462,5 +778,18 @@ h2 {
     .key {
         min-height: 45px;
         font-size: 1em;
+    }
+
+    .alphabet-letter {
+        width: 34px;
+        height: 42px;
+    }
+
+    .alphabet-letter .letter-char {
+        font-size: 0.95em;
+    }
+
+    .alphabet-letter .letter-sound {
+        font-size: 0.5em;
     }
 }

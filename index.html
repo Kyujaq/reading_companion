@@ -4,37 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reading Companion</title>
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Reading Companion</h1>
-            <div class="language-toggle">
-                <button id="langBtn" class="btn-language active" data-lang="fr">
-                    <span class="flag">🇫🇷</span> Français
-                </button>
+            <div class="header-controls">
+                <button id="caseToggleBtn" class="btn-case" title="Switch between uppercase and lowercase">Aa</button>
+                <div class="language-toggle">
+                    <button id="langBtn" class="btn-language active" data-lang="fr">
+                        <span class="flag">🇫🇷</span> Français
+                    </button>
+                </div>
             </div>
         </header>
 
         <main>
+            <!-- Alphabet Reference Strip -->
+            <section class="alphabet-section">
+                <h2>🔤 Alphabet</h2>
+                <div id="alphabetStrip" class="alphabet-strip"></div>
+            </section>
+
             <!-- Syllable Builder -->
             <section class="syllable-builder-section">
                 <h2>Letters & Syllables</h2>
+                <div id="guidedExample" class="guided-example"></div>
                 <div class="syllable-builder">
                     <!-- Consonants Column -->
                     <div class="consonants-column">
                         <div id="consonantKeyboard" class="keyboard-column"></div>
                     </div>
                     
-                    <!-- Blue Box (Consonant) -->
-                    <div class="builder-box-container">
-                        <div id="consonantBox" class="builder-box blue-box"></div>
-                    </div>
-                    
-                    <!-- Pink Box (Vowel) -->
-                    <div class="builder-box-container">
-                        <div id="vowelBox" class="builder-box pink-box"></div>
+                    <!-- Formula Display: Box + Box = Result -->
+                    <div class="formula-display">
+                        <div class="builder-box-container">
+                            <div id="consonantBox" class="builder-box blue-box"></div>
+                        </div>
+                        <span class="formula-operator">+</span>
+                        <div class="builder-box-container">
+                            <div id="vowelBox" class="builder-box pink-box"></div>
+                        </div>
+                        <span class="formula-operator">=</span>
+                        <div class="builder-box-container">
+                            <div id="resultBox" class="builder-box result-box"></div>
+                        </div>
                     </div>
                     
                     <!-- Vowels Column -->
@@ -59,6 +74,23 @@
                 <div id="syllableButtons" class="syllable-buttons"></div>
             </section>
 
+            <!-- Word Builder from Syllables -->
+            <section class="word-builder-section">
+                <h2>🧩 Build Words from Syllables</h2>
+                <div id="wordBuilderExample" class="word-builder-example"></div>
+                <div class="word-builder-area">
+                    <div id="wordBuilderSyllables" class="word-builder-syllables"></div>
+                    <div class="word-builder-workspace">
+                        <div id="wordBuilderSlots" class="word-builder-slots"></div>
+                        <div class="word-builder-controls">
+                            <button id="wordBuilderPlayBtn" class="btn-play">▶ Play</button>
+                            <button id="wordBuilderClearBtn" class="btn-clear">Clear</button>
+                        </div>
+                    </div>
+                    <div id="wordBuilderResult" class="word-builder-result"></div>
+                </div>
+            </section>
+
             <!-- Word Bank -->
             <section class="words-section">
                 <h2>Word Bank</h2>
@@ -78,6 +110,9 @@
         </main>
     </div>
 
-    <script src="script.js?v=2"></script>
+    <!-- Celebration overlay -->
+    <div id="celebrationOverlay" class="celebration-overlay"></div>
+
+    <script src="script.js?v=3"></script>
 </body>
 </html>
