@@ -544,7 +544,7 @@ class ReadingCompanion {
 
         // Section headers
         var headingMap = {
-            'alphabet-section': fr ? '🔤 Alphabet' : '🔤 Alphabet',
+            'alphabet-section': '🔤 Alphabet',
             'syllable-builder-section': fr ? 'Lettres et syllabes' : 'Letters & Syllables',
             'syllables-section': fr ? 'Syllabes courantes' : 'Common Syllables',
             'word-builder-section': fr ? '🧩 Construis des mots avec les syllabes' : '🧩 Build Words from Syllables',

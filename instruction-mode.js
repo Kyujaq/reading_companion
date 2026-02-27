@@ -1,5 +1,8 @@
 // Phase 1 — Scripted Instruction Mode
 
+const WRONG_LETTER_DISPLAY_MS = 800;
+const WRONG_LETTER_FADE_MS = 400;
+
 // ── Lesson Scripts ────────────────────────────────────────────────────────────
 
 const LESSONS = {
@@ -272,9 +275,7 @@ class InstructionSession {
                 if (step.next) this._goTo(step.next);
             });
         } else {
-            const failMsg = isFr
-                ? `C'était la lettre ${received.toUpperCase()}, essaie encore, appuie sur la lettre ${expected.toUpperCase()}`
-                : `That was the letter ${received.toUpperCase()}, try again, press the letter ${expected.toUpperCase()}`;
+            const failMsg = _wrongLetterMessage(received, expected, isFr);
             this.feedback.speakWithOllama(failMsg, { ...context, correct: false }, null);
         }
     }
@@ -329,6 +330,12 @@ function makeLessonFromWord(word, language) {
     };
 }
 
+function _wrongLetterMessage(received, expected, isFr) {
+    return isFr
+        ? `C'était la lettre ${received.toUpperCase()}, essaie encore, appuie sur la lettre ${expected.toUpperCase()}`
+        : `That was the letter ${received.toUpperCase()}, try again, press the letter ${expected.toUpperCase()}`;
+}
+
 function showLetterFeedback(letter, correct, expected, isFr) {
     const bar = document.getElementById('instructionLetterBar');
     const msg = document.getElementById('instructionFeedbackMsg');
@@ -346,12 +353,10 @@ function showLetterFeedback(letter, correct, expected, isFr) {
         // Show red X overlay then remove after animation
         setTimeout(() => {
             span.classList.add('letter-fade-out');
-            setTimeout(() => span.remove(), 400);
-        }, 800);
+            setTimeout(() => span.remove(), WRONG_LETTER_FADE_MS);
+        }, WRONG_LETTER_DISPLAY_MS);
         if (msg) {
-            msg.textContent = isFr
-                ? `C'était la lettre ${letter.toUpperCase()}, essaie encore, appuie sur la lettre ${expected.toUpperCase()}`
-                : `That was the letter ${letter.toUpperCase()}, try again, press the letter ${expected.toUpperCase()}`;
+            msg.textContent = _wrongLetterMessage(letter, expected, isFr);
             msg.className = 'instruction-feedback-msg feedback-error';
         }
     }
