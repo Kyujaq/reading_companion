@@ -793,3 +793,592 @@ h2 {
         font-size: 0.5em;
     }
 }
+
+/* ── Tab Navigation ────────────────────────────────────────────────────────── */
+.tab-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 12px 20px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: bold;
+    transition: all 0.3s;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.tab-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* ── Header new buttons ────────────────────────────────────────────────────── */
+.btn-instruction {
+    padding: 10px 18px;
+    border: 2px solid #f093fb;
+    background: white;
+    color: #764ba2;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.btn-instruction:hover,
+.btn-instruction.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.btn-settings {
+    padding: 10px 14px;
+    border: 2px solid #999;
+    background: white;
+    color: #555;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: all 0.3s;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.btn-settings:hover {
+    background: #f0f0f0;
+}
+
+.service-indicator {
+    font-size: 1.4em;
+    cursor: default;
+    line-height: 1;
+}
+
+/* ── Expected key highlight ────────────────────────────────────────────────── */
+.key.expected-key,
+.alphabet-letter.expected-key {
+    animation: expectedPulse 1s ease-in-out infinite;
+    box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5) !important;
+    z-index: 1;
+}
+
+@keyframes expectedPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.4); }
+    50%       { box-shadow: 0 0 0 6px rgba(255, 140, 0, 0.9), 0 0 24px rgba(255, 140, 0, 0.6); }
+}
+
+/* ── Instruction Mode Overlay ──────────────────────────────────────────────── */
+.instruction-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.instruction-overlay.visible {
+    display: flex;
+}
+
+.instruction-panel {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+    margin: auto;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.instruction-close-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: none;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    cursor: pointer;
+    font-size: 1em;
+    color: #999;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.instruction-close-btn:hover {
+    background: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+}
+
+.instruction-title {
+    color: #764ba2;
+    margin-bottom: 16px;
+    font-size: 1.5em;
+}
+
+.instruction-subtitle {
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.lesson-select {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.05em;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.btn-instruction-start {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: all 0.3s;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.btn-instruction-start:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+.instruction-lesson-title {
+    color: #764ba2;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+}
+
+.instruction-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.instruction-progress-track {
+    flex: 1;
+    height: 14px;
+    background: #e8e8e8;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.instruction-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #f093fb);
+    border-radius: 7px;
+    transition: width 0.4s ease;
+}
+
+.instruction-progress-label {
+    font-weight: bold;
+    color: #764ba2;
+    white-space: nowrap;
+    font-size: 0.95em;
+}
+
+.instruction-hint {
+    color: #555;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.instruction-complete-icon {
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.instruction-complete-title {
+    color: #51cf66;
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 1.3em;
+}
+
+.instruction-summary {
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.instruction-complete-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-instruction-done {
+    flex: 1;
+    padding: 15px;
+    background: #51cf66;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: bold;
+    min-height: 44px;
+    touch-action: manipulation;
+    transition: all 0.3s;
+}
+
+.btn-instruction-done:hover {
+    background: #40c057;
+}
+
+/* ── Gallery ───────────────────────────────────────────────────────────────── */
+.gallery-section {
+    margin-bottom: 30px;
+}
+
+.gallery-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.gallery-filter-btn {
+    padding: 10px 18px;
+    border: 2px solid #f093fb;
+    background: white;
+    color: #764ba2;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: bold;
+    transition: all 0.2s;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.gallery-filter-btn:hover,
+.gallery-filter-btn.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+.gallery-card {
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 16px;
+    padding: 20px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    touch-action: manipulation;
+}
+
+.gallery-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+}
+
+.gallery-emoji {
+    font-size: 3em;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.gallery-word {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.gallery-syllables {
+    font-size: 0.85em;
+    color: #764ba2;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.gallery-syllable {
+    display: inline-block;
+    padding: 2px 5px;
+    border-radius: 5px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.gallery-syllable.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.gallery-syllable-sep {
+    color: #ccc;
+    margin: 0 2px;
+}
+
+.gallery-btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.btn-gallery-action {
+    padding: 8px 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: bold;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    transition: all 0.2s;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.btn-gallery-action:hover {
+    opacity: 0.85;
+    transform: scale(1.03);
+}
+
+.btn-spell {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* ── Camera / YOLO ─────────────────────────────────────────────────────────── */
+.camera-section {
+    margin-bottom: 30px;
+}
+
+.camera-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.btn-camera-action {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transition: all 0.2s;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.btn-camera-action:hover:not(:disabled) {
+    opacity: 0.85;
+    transform: scale(1.03);
+}
+
+.btn-camera-action:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.yolo-status {
+    margin: 12px 0;
+    padding: 12px 16px;
+    background: #f8f0ff;
+    border-radius: 10px;
+    color: #764ba2;
+    font-weight: 500;
+}
+
+.yolo-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.yolo-card {
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 14px;
+    padding: 16px;
+    min-width: 180px;
+    flex: 1 1 180px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.yolo-label {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+    text-transform: capitalize;
+}
+
+.yolo-conf {
+    font-size: 0.85em;
+    color: #888;
+    margin-bottom: 12px;
+}
+
+.yolo-btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ── Settings Panel ────────────────────────────────────────────────────────── */
+.settings-panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0;
+    height: 100%;
+    width: 320px;
+    background: white;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    overflow-y: auto;
+}
+
+.settings-panel.visible {
+    display: block;
+}
+
+.settings-inner {
+    padding: 32px 24px;
+    position: relative;
+}
+
+.settings-title {
+    color: #764ba2;
+    margin-bottom: 24px;
+    font-size: 1.4em;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-size: 1em;
+    color: #333;
+}
+
+.settings-text-input {
+    padding: 10px 14px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 1em;
+    width: 160px;
+    transition: border-color 0.2s;
+}
+
+.settings-text-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.settings-toggle {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.settings-services-title {
+    color: #764ba2;
+    margin: 20px 0 12px;
+    font-size: 1.05em;
+}
+
+.settings-services-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.settings-services-table td {
+    padding: 8px 4px;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.service-status {
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.service-status.ok { color: #51cf66; }
+.service-status.err { color: #ff6b6b; }
+
+/* ── Responsive tweaks ─────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+
+    .settings-panel {
+        width: 100%;
+    }
+
+    .tab-btn {
+        font-size: 0.85em;
+        padding: 10px 14px;
+    }
+
+    .instruction-complete-btns {
+        flex-direction: column;
+    }
+}

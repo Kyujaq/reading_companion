@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reading Companion</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
     <div class="container">
@@ -12,6 +12,10 @@
             <h1>Reading Companion</h1>
             <div class="header-controls">
                 <button id="caseToggleBtn" class="btn-case" title="Switch between uppercase and lowercase">Aa</button>
+                <button id="instructionModeBtn" class="btn-instruction" title="Instruction Mode">🎓 Lessons</button>
+                <span id="ollamaIndicator" class="service-indicator" title="AI Tutor connected" style="display:none">🤖</span>
+                <span id="voskIndicator" class="service-indicator" title="Voice recognition available" style="display:none">🎤</span>
+                <button id="settingsBtn" class="btn-settings" title="Settings">⚙️</button>
                 <div class="language-toggle">
                     <button id="langBtn" class="btn-language active" data-lang="fr">
                         <span class="flag">🇫🇷</span> Français
@@ -20,99 +24,274 @@
             </div>
         </header>
 
+        <!-- Tab navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="letters">🔤 Letters &amp; Syllables</button>
+            <button class="tab-btn" data-tab="words">📚 Words &amp; Stories</button>
+            <button class="tab-btn" data-tab="gallery">🖼️ Gallery</button>
+            <button class="tab-btn" data-tab="camera" id="cameraTabBtn" style="display:none">📷 Camera</button>
+        </nav>
+
         <main>
-            <!-- Alphabet Reference Strip -->
-            <section class="alphabet-section">
-                <h2>🔤 Alphabet</h2>
-                <div id="alphabetStrip" class="alphabet-strip"></div>
-            </section>
+            <!-- Tab: Letters & Syllables -->
+            <div class="tab-panel active" id="tab-letters">
+                <section class="alphabet-section">
+                    <h2>🔤 Alphabet</h2>
+                    <div id="alphabetStrip" class="alphabet-strip"></div>
+                </section>
 
-            <!-- Syllable Builder -->
-            <section class="syllable-builder-section">
-                <h2>Letters & Syllables</h2>
-                <div id="guidedExample" class="guided-example"></div>
-                <div class="syllable-builder">
-                    <!-- Consonants Column -->
-                    <div class="consonants-column">
-                        <div id="consonantKeyboard" class="keyboard-column"></div>
-                    </div>
-                    
-                    <!-- Formula Display: Box + Box = Result -->
-                    <div class="formula-display">
-                        <div class="builder-box-container">
-                            <div id="consonantBox" class="builder-box blue-box"></div>
+                <section class="syllable-builder-section">
+                    <h2>Letters &amp; Syllables</h2>
+                    <div id="guidedExample" class="guided-example"></div>
+                    <div class="syllable-builder">
+                        <div class="consonants-column">
+                            <div id="consonantKeyboard" class="keyboard-column"></div>
                         </div>
-                        <span class="formula-operator">+</span>
-                        <div class="builder-box-container">
-                            <div id="vowelBox" class="builder-box pink-box"></div>
+                        <div class="formula-display">
+                            <div class="builder-box-container">
+                                <div id="consonantBox" class="builder-box blue-box"></div>
+                            </div>
+                            <span class="formula-operator">+</span>
+                            <div class="builder-box-container">
+                                <div id="vowelBox" class="builder-box pink-box"></div>
+                            </div>
+                            <span class="formula-operator">=</span>
+                            <div class="builder-box-container">
+                                <div id="resultBox" class="builder-box result-box"></div>
+                            </div>
                         </div>
-                        <span class="formula-operator">=</span>
-                        <div class="builder-box-container">
-                            <div id="resultBox" class="builder-box result-box"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Vowels Column -->
-                    <div class="vowels-column">
-                        <div id="vowelKeyboard" class="keyboard-column"></div>
-                    </div>
-                </div>
-                
-                <!-- History Box -->
-                <div class="history-container">
-                    <div id="historyDisplay" class="history-display"></div>
-                    <div class="history-buttons">
-                        <button id="playBtn" class="btn-play">▶ Play</button>
-                        <button id="clearBtn" class="btn-clear">Clear</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Common Syllables (for quick access) -->
-            <section class="syllables-section">
-                <h2>Common Syllables</h2>
-                <div id="syllableButtons" class="syllable-buttons"></div>
-            </section>
-
-            <!-- Word Builder from Syllables -->
-            <section class="word-builder-section">
-                <h2>🧩 Build Words from Syllables</h2>
-                <div id="wordBuilderExample" class="word-builder-example"></div>
-                <div class="word-builder-area">
-                    <div id="wordBuilderSyllables" class="word-builder-syllables"></div>
-                    <div class="word-builder-workspace">
-                        <div id="wordBuilderSlots" class="word-builder-slots"></div>
-                        <div class="word-builder-controls">
-                            <button id="wordBuilderPlayBtn" class="btn-play">▶ Play</button>
-                            <button id="wordBuilderClearBtn" class="btn-clear">Clear</button>
+                        <div class="vowels-column">
+                            <div id="vowelKeyboard" class="keyboard-column"></div>
                         </div>
                     </div>
-                    <div id="wordBuilderResult" class="word-builder-result"></div>
-                </div>
-            </section>
+                    <div class="history-container">
+                        <div id="historyDisplay" class="history-display"></div>
+                        <div class="history-buttons">
+                            <button id="playBtn" class="btn-play">&#9654; Play</button>
+                            <button id="clearBtn" class="btn-clear">Clear</button>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Word Bank -->
-            <section class="words-section">
-                <h2>Word Bank</h2>
-                <div id="wordBank" class="word-bank"></div>
-            </section>
+                <section class="syllables-section">
+                    <h2>Common Syllables</h2>
+                    <div id="syllableButtons" class="syllable-buttons"></div>
+                </section>
 
-            <!-- Story Bank -->
-            <section class="story-section">
-                <h2>Story Bank</h2>
-                <div class="story-controls">
-                    <select id="storySelect" class="story-select">
-                        <option value="">Select a story...</option>
-                    </select>
-                </div>
-                <div id="storyDisplay" class="story-display"></div>
-            </section>
+                <section class="word-builder-section">
+                    <h2>🧩 Build Words from Syllables</h2>
+                    <div id="wordBuilderExample" class="word-builder-example"></div>
+                    <div class="word-builder-area">
+                        <div id="wordBuilderSyllables" class="word-builder-syllables"></div>
+                        <div class="word-builder-workspace">
+                            <div id="wordBuilderSlots" class="word-builder-slots"></div>
+                            <div class="word-builder-controls">
+                                <button id="wordBuilderPlayBtn" class="btn-play">&#9654; Play</button>
+                                <button id="wordBuilderClearBtn" class="btn-clear">Clear</button>
+                            </div>
+                        </div>
+                        <div id="wordBuilderResult" class="word-builder-result"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Tab: Words & Stories -->
+            <div class="tab-panel" id="tab-words">
+                <section class="words-section">
+                    <h2>Word Bank</h2>
+                    <div id="wordBank" class="word-bank"></div>
+                </section>
+
+                <section class="story-section">
+                    <h2>Story Bank</h2>
+                    <div class="story-controls">
+                        <select id="storySelect" class="story-select">
+                            <option value="">Select a story...</option>
+                        </select>
+                    </div>
+                    <div id="storyDisplay" class="story-display"></div>
+                </section>
+            </div>
+
+            <!-- Tab: Gallery -->
+            <div class="tab-panel" id="tab-gallery">
+                <section class="gallery-section">
+                    <h2>🖼️ Picture Gallery</h2>
+                    <div id="galleryCategoryFilters" class="gallery-filters"></div>
+                    <div id="galleryGrid" class="gallery-grid"></div>
+                </section>
+            </div>
+
+            <!-- Tab: Camera (hidden unless YOLO available) -->
+            <div class="tab-panel" id="tab-camera">
+                <section class="camera-section">
+                    <h2>📷 Camera Mode</h2>
+                    <div class="camera-controls">
+                        <button id="cameraSwitchBtn" class="btn-camera-action">📷 Start Camera</button>
+                        <button id="cameraSnapBtn" class="btn-camera-action" disabled>📸 Snap!</button>
+                        <button id="cameraUploadBtn" class="btn-camera-action">🖼️ Upload Photo</button>
+                        <input type="file" id="cameraUploadInput" accept="image/*" capture="environment" style="display:none">
+                    </div>
+                    <video id="cameraVideo" autoplay playsinline style="display:none; max-width:100%; border-radius:12px; margin-top:12px;"></video>
+                    <canvas id="cameraCanvas" style="display:none;"></canvas>
+                    <img id="cameraPreview" style="display:none; max-width:100%; border-radius:12px; margin-top:12px;" alt="Captured photo">
+                    <p id="yoloStatus" class="yolo-status" style="display:none;"></p>
+                    <div id="yoloResults" class="yolo-results"></div>
+                </section>
+            </div>
         </main>
     </div>
 
     <!-- Celebration overlay -->
     <div id="celebrationOverlay" class="celebration-overlay"></div>
 
-    <script src="script.js?v=3"></script>
+    <!-- Instruction Mode Overlay -->
+    <div id="instructionOverlay" class="instruction-overlay">
+        <div class="instruction-panel">
+            <button id="instructionCloseBtn" class="instruction-close-btn" title="Close">&#10005;</button>
+
+            <div id="instructionSelectorPanel">
+                <h2 class="instruction-title">🎓 Instruction Mode</h2>
+                <p class="instruction-subtitle">Choose a lesson to begin:</p>
+                <select id="lessonSelect" class="lesson-select"></select>
+                <button id="instructionStartBtn" class="btn-instruction-start">&#9654; Start Lesson</button>
+            </div>
+
+            <div id="instructionSessionPanel" style="display:none">
+                <h3 id="instructionLessonTitle" class="instruction-lesson-title"></h3>
+                <div class="instruction-progress-wrap">
+                    <div class="instruction-progress-track">
+                        <div id="instructionProgressBar" class="instruction-progress-bar" style="width:0%"></div>
+                    </div>
+                    <span id="instructionProgressLabel" class="instruction-progress-label">1 / 1</span>
+                </div>
+                <p class="instruction-hint">Press the highlighted key on the keyboard below.</p>
+            </div>
+
+            <div id="instructionCompletePanel" style="display:none">
+                <div class="instruction-complete-icon">🏆</div>
+                <h3 class="instruction-complete-title">Congratulations!</h3>
+                <p id="instructionSummary" class="instruction-summary"></p>
+                <div class="instruction-complete-btns">
+                    <button id="instructionAgainBtn" class="btn-instruction-start">🔄 Another Lesson</button>
+                    <button id="instructionDoneBtn" class="btn-instruction-done">&#10003; Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settingsPanel" class="settings-panel">
+        <div class="settings-inner">
+            <button id="settingsCloseBtn" class="instruction-close-btn" title="Close">&#10005;</button>
+            <h2 class="settings-title">&#9881;&#65039; Settings</h2>
+
+            <div class="settings-row">
+                <label for="childNameInput">Child's name:</label>
+                <input type="text" id="childNameInput" class="settings-text-input" placeholder="e.g. Emma" maxlength="30">
+            </div>
+
+            <div class="settings-row">
+                <label for="ollamaUrlInput">Ollama URL:</label>
+                <input type="text" id="ollamaUrlInput" class="settings-text-input" placeholder="http://192.168.2.205:11434" maxlength="80">
+            </div>
+
+            <div class="settings-row">
+                <label for="ollamaToggle">🤖 AI Tutor (Ollama):</label>
+                <input type="checkbox" id="ollamaToggle" class="settings-toggle">
+            </div>
+
+            <h3 class="settings-services-title">Service Status</h3>
+            <table class="settings-services-table">
+                <tr>
+                    <td>🤖 Ollama</td>
+                    <td><span id="ollamaStatus" class="service-status">Checking&hellip;</span></td>
+                </tr>
+                <tr>
+                    <td>🎤 Vosk STT</td>
+                    <td><span id="voskStatus" class="service-status">Checking&hellip;</span></td>
+                </tr>
+                <tr>
+                    <td>📷 YOLO</td>
+                    <td><span id="yoloServiceStatus" class="service-status">Checking&hellip;</span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js?v=4"></script>
+    <script src="instruction-mode.js"></script>
+    <script src="gallery.js"></script>
+    <script src="vosk-client.js"></script>
+    <script src="ollama-coach.js"></script>
+    <script src="yolo-camera.js"></script>
+    <script>
+    (async function bootstrap() {
+        var app = window.readingCompanionApp;
+
+        // Instruction Mode
+        window.instructionModeManager = new InstructionModeManager(app);
+        window.instructionModeManager.init();
+
+        // Gallery
+        window.galleryManager = new GalleryManager(app);
+        window.galleryManager.init();
+
+        // Ollama + Vosk + YOLO
+        var ollamaCoach = new OllamaCoach();
+        var voskIntegration = new VoskIntegration();
+        var yoloManager = new YoloCameraManager(app);
+
+        // Settings
+        var settingsManager = new SettingsManager(
+            ollamaCoach,
+            voskIntegration,
+            window.instructionModeManager.feedback
+        );
+        settingsManager.init();
+
+        // Check availability in parallel
+        var results = await Promise.all([
+            ollamaCoach.checkAvailability(),
+            voskIntegration.init(window.instructionModeManager),
+            yoloManager.checkAvailability()
+        ]);
+        var yoloOk = results[2];
+
+        if (yoloOk) {
+            var cameraTab = document.getElementById('cameraTabBtn');
+            if (cameraTab) cameraTab.style.display = '';
+            yoloManager.init();
+        }
+
+        settingsManager.updateServiceStatus();
+
+        var yoloStatus = document.getElementById('yoloServiceStatus');
+        if (yoloStatus) {
+            yoloStatus.textContent = yoloOk ? '\u2705 Available' : '\u274C Not reachable';
+            yoloStatus.className = 'service-status ' + (yoloOk ? 'ok' : 'err');
+        }
+
+        // Tab navigation
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var tabId = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+                document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+                btn.classList.add('active');
+                var panel = document.getElementById('tab-' + tabId);
+                if (panel) panel.classList.add('active');
+            });
+        });
+
+        // Patch toggleLanguage to notify new modules
+        var origToggle = app.toggleLanguage.bind(app);
+        app.toggleLanguage = function() {
+            origToggle();
+            window.instructionModeManager.onLanguageChange();
+            window.galleryManager.onLanguageChange();
+        };
+    })();
+    </script>
 </body>
 </html>

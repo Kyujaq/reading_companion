@@ -568,6 +568,10 @@ class ReadingCompanion {
     }
     
     handleConsonantClick(consonant) {
+        // Notify instruction mode manager first
+        if (window.instructionModeManager && window.instructionModeManager.active) {
+            window.instructionModeManager.handleLetterInput(consonant);
+        }
         // Special case: Q writes "Qu" in the box but still shows Q on button
         const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
         this.consonantBox = boxText;
@@ -580,6 +584,10 @@ class ReadingCompanion {
     }
     
     handleVowelClick(vowel) {
+        // Notify instruction mode manager first
+        if (window.instructionModeManager && window.instructionModeManager.active) {
+            window.instructionModeManager.handleLetterInput(vowel);
+        }
         this.handleLetterClick(vowel);
     }
     
@@ -813,6 +821,10 @@ class ReadingCompanion {
             el.appendChild(soundSpan);
             
             el.addEventListener('click', () => {
+                // Notify instruction mode manager
+                if (window.instructionModeManager && window.instructionModeManager.active) {
+                    window.instructionModeManager.handleLetterInput(letter);
+                }
                 el.classList.add('playing');
                 this.playSound(letter, () => {
                     el.classList.remove('playing');
@@ -1278,8 +1290,8 @@ class ReadingCompanion {
 // Initialize the app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        new ReadingCompanion();
+        window.readingCompanionApp = new ReadingCompanion();
     });
 } else {
-    new ReadingCompanion();
+    window.readingCompanionApp = new ReadingCompanion();
 }
