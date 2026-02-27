@@ -219,6 +219,7 @@
             <div id="progressHistoryList" class="progress-history-list">
                 <p class="progress-empty">No lessons completed yet. Start a lesson to earn stars!</p>
             </div>
+            <button id="printWorksheetBtn" class="btn-progress-clear" type="button" style="margin-right:8px">🖨️ Print Worksheet</button>
             <button id="progressClearBtn" class="btn-progress-clear" type="button">🗑️ Clear History</button>
 
             <h3 class="settings-services-title">🔄 Weak Spots</h3>
@@ -292,6 +293,7 @@
     <script src="script.js?v=4"></script>
     <script src="progress-tracker.js"></script>
     <script src="spaced-repetition.js"></script>
+    <script src="printable-worksheet.js"></script>
     <script src="instruction-mode.js"></script>
     <script src="lesson-builder.js"></script>
     <script src="gallery.js"></script>
@@ -316,6 +318,15 @@
 
         // Spaced Repetition
         window.spacedRepetition = new SpacedRepetitionTracker();
+
+        // Printable Worksheet
+        window.worksheetGenerator = new WorksheetGenerator();
+        var printBtn = document.getElementById('printWorksheetBtn');
+        if (printBtn) {
+            printBtn.addEventListener('click', function() {
+                window.worksheetGenerator.generateWorksheet();
+            });
+        }
 
         // Wire progress + spaced repetition into lesson completion
         var origOnComplete = window.instructionModeManager._onLessonComplete.bind(window.instructionModeManager);
