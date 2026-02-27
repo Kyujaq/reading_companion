@@ -432,6 +432,7 @@ class ReadingCompanion {
         this.renderWordBuilder();
         this.renderWordBank();
         this.renderStorySelect();
+        this.updateUILanguage();
         
         // Start guided examples
         this.startGuidedExamples();
@@ -481,6 +482,10 @@ class ReadingCompanion {
 
     setupKeyboardInput() {
         document.addEventListener('keydown', (e) => {
+            // Don't intercept keys when typing in input fields
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
             const key = e.key.toLowerCase();
             const consonantsList = this.consonants[this.currentLanguage];
             const vowelsList = this.vowels[this.currentLanguage];
@@ -519,6 +524,110 @@ class ReadingCompanion {
         this.renderStorySelect();
         this.clearSyllableBuilder();
         this.startGuidedExamples();
+        this.updateUILanguage();
+    }
+
+    updateUILanguage() {
+        const fr = this.currentLanguage === 'fr';
+
+        // Tab buttons
+        const tabTexts = {
+            letters: fr ? '🔤 Lettres et syllabes' : '🔤 Letters & Syllables',
+            words: fr ? '📚 Mots et histoires' : '📚 Words & Stories',
+            gallery: '🖼️ Gallery',
+            camera: fr ? '📷 Caméra' : '📷 Camera'
+        };
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            var tab = btn.dataset.tab;
+            if (tab && tabTexts[tab]) btn.innerHTML = tabTexts[tab];
+        });
+
+        // Section headers
+        var headingMap = {
+            'alphabet-section': fr ? '🔤 Alphabet' : '🔤 Alphabet',
+            'syllable-builder-section': fr ? 'Lettres et syllabes' : 'Letters & Syllables',
+            'syllables-section': fr ? 'Syllabes courantes' : 'Common Syllables',
+            'word-builder-section': fr ? '🧩 Construis des mots avec les syllabes' : '🧩 Build Words from Syllables',
+            'words-section': fr ? 'Banque de mots' : 'Word Bank',
+            'story-section': fr ? 'Banque d\'histoires' : 'Story Bank'
+        };
+        for (var cls in headingMap) {
+            var sec = document.querySelector('.' + cls);
+            if (sec) {
+                var h = sec.querySelector('h2');
+                if (h) h.textContent = headingMap[cls];
+            }
+        }
+
+        // Buttons
+        var playBtn = document.getElementById('playBtn');
+        if (playBtn) playBtn.innerHTML = fr ? '&#9654; Jouer' : '&#9654; Play';
+        var clearBtn = document.getElementById('clearBtn');
+        if (clearBtn) clearBtn.textContent = fr ? 'Effacer' : 'Clear';
+        var wbPlayBtn = document.getElementById('wordBuilderPlayBtn');
+        if (wbPlayBtn) wbPlayBtn.innerHTML = fr ? '&#9654; Jouer' : '&#9654; Play';
+        var wbClearBtn = document.getElementById('wordBuilderClearBtn');
+        if (wbClearBtn) wbClearBtn.textContent = fr ? 'Effacer' : 'Clear';
+
+        // Story select default option
+        var storySelect = document.getElementById('storySelect');
+        if (storySelect && storySelect.options.length > 0) {
+            storySelect.options[0].textContent = fr ? 'Choisis une histoire...' : 'Select a story...';
+        }
+
+        // Header
+        var h1 = document.querySelector('header h1');
+        if (h1) h1.textContent = fr ? 'Compagnon de lecture' : 'Reading Companion';
+
+        // Instruction mode
+        var instrTitle = document.querySelector('#instructionSelectorPanel .instruction-title');
+        if (instrTitle) instrTitle.textContent = fr ? '🎓 Mode leçon' : '🎓 Instruction Mode';
+        var instrSubtitle = document.querySelector('#instructionSelectorPanel .instruction-subtitle');
+        if (instrSubtitle) instrSubtitle.textContent = fr ? 'Choisis une leçon :' : 'Choose a lesson to begin:';
+        var instrStartBtn = document.getElementById('instructionStartBtn');
+        if (instrStartBtn) instrStartBtn.innerHTML = fr ? '&#9654; Commencer' : '&#9654; Start Lesson';
+        var builderOpenBtn = document.getElementById('lessonBuilderOpenBtn');
+        if (builderOpenBtn) builderOpenBtn.textContent = fr ? '➕ Créer une leçon' : '➕ Create Lesson';
+        var instrModeBtn = document.getElementById('instructionModeBtn');
+        if (instrModeBtn) instrModeBtn.textContent = fr ? '🎓 Leçons' : '🎓 Lessons';
+        var instrHint = document.querySelector('#instructionSessionPanel .instruction-hint');
+        if (instrHint) instrHint.textContent = fr ? 'Appuie sur la touche en surbrillance.' : 'Press the highlighted key on the keyboard below.';
+
+        // Completion panel
+        var completeTitle = document.querySelector('.instruction-complete-title');
+        if (completeTitle) completeTitle.textContent = fr ? 'Félicitations !' : 'Congratulations!';
+        var againBtn = document.getElementById('instructionAgainBtn');
+        if (againBtn) againBtn.textContent = fr ? '🔄 Autre leçon' : '🔄 Another Lesson';
+        var doneBtn = document.getElementById('instructionDoneBtn');
+        if (doneBtn) doneBtn.innerHTML = fr ? '&#10003; Terminé' : '&#10003; Done';
+
+        // Settings labels
+        var settingsTitle = document.querySelector('.settings-title');
+        if (settingsTitle) settingsTitle.innerHTML = fr ? '&#9881;&#65039; Paramètres' : '&#9881;&#65039; Settings';
+        var childNameLabel = document.querySelector('label[for="childNameInput"]');
+        if (childNameLabel) childNameLabel.textContent = fr ? 'Nom de l\'enfant :' : 'Child\'s name:';
+        var childNameInput = document.getElementById('childNameInput');
+        if (childNameInput) childNameInput.placeholder = fr ? 'ex. Emma' : 'e.g. Emma';
+
+        // Settings progress section
+        var progressTitle = document.querySelector('.settings-services-title');
+        // There are multiple .settings-services-title, update them all
+        var svcTitles = document.querySelectorAll('.settings-services-title');
+        if (svcTitles[0]) svcTitles[0].textContent = fr ? '📊 Progrès' : '📊 Progress';
+        if (svcTitles[1]) svcTitles[1].textContent = fr ? '🔄 Points faibles' : '🔄 Weak Spots';
+        if (svcTitles[2]) svcTitles[2].textContent = fr ? 'État des services' : 'Service Status';
+
+        var printBtn = document.getElementById('printWorksheetBtn');
+        if (printBtn) printBtn.textContent = fr ? '🖨️ Imprimer' : '🖨️ Print Worksheet';
+        var clearHistBtn = document.getElementById('progressClearBtn');
+        if (clearHistBtn) clearHistBtn.textContent = fr ? '🗑️ Effacer l\'historique' : '🗑️ Clear History';
+
+        var practiceBtn = document.getElementById('practiceWeakSpotsBtn');
+        if (practiceBtn) practiceBtn.textContent = fr ? '🔄 Pratiquer les points faibles' : '🔄 Practice Weak Spots';
+
+        // PIN overlay
+        var pinSubtitle = document.getElementById('settingsPinSubtitle');
+        if (pinSubtitle) pinSubtitle.textContent = fr ? 'Entrez le NIP pour accéder aux paramètres' : 'Enter PIN to access settings';
     }
 
     renderSyllableBuilder() {
@@ -568,9 +677,10 @@ class ReadingCompanion {
     }
     
     handleConsonantClick(consonant) {
-        // Notify instruction mode manager first
+        // Notify instruction mode manager first; skip letter sound to avoid overlap with TTS
         if (window.instructionModeManager && window.instructionModeManager.active) {
             window.instructionModeManager.handleLetterInput(consonant);
+            return;
         }
         // Special case: Q writes "Qu" in the box but still shows Q on button
         const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
@@ -591,9 +701,10 @@ class ReadingCompanion {
     }
     
     handleVowelClick(vowel) {
-        // Notify instruction mode manager first
+        // Notify instruction mode manager first; skip letter sound to avoid overlap with TTS
         if (window.instructionModeManager && window.instructionModeManager.active) {
             window.instructionModeManager.handleLetterInput(vowel);
+            return;
         }
         
         // Put in first empty box
@@ -805,9 +916,10 @@ class ReadingCompanion {
             el.appendChild(soundSpan);
             
             el.addEventListener('click', () => {
-                // Notify instruction mode manager
+                // Notify instruction mode manager; skip letter sound to avoid overlap
                 if (window.instructionModeManager && window.instructionModeManager.active) {
                     window.instructionModeManager.handleLetterInput(letter);
+                    return;
                 }
                 el.classList.add('playing');
                 this.playSound(letter, () => {
@@ -994,7 +1106,8 @@ class ReadingCompanion {
         const stories = this.languageData[this.currentLanguage].stories;
         
         // Clear existing options except the first one
-        select.innerHTML = '<option value="">Select a story...</option>';
+        var placeholder = this.currentLanguage === 'fr' ? 'Choisis une histoire...' : 'Select a story...';
+        select.innerHTML = '<option value="">' + placeholder + '</option>';
         
         stories.forEach((story, index) => {
             const option = document.createElement('option');

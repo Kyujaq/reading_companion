@@ -107,10 +107,20 @@ class SettingsManager {
 
     init() {
         const gearBtn = document.getElementById('settingsBtn');
-        if (gearBtn) gearBtn.addEventListener('click', () => this.togglePanel());
+        if (gearBtn) gearBtn.addEventListener('click', () => this.showPinPrompt());
 
         const closeBtn = document.getElementById('settingsCloseBtn');
         if (closeBtn) closeBtn.addEventListener('click', () => this.closePanel());
+
+        // PIN overlay
+        const pinCloseBtn = document.getElementById('settingsPinCloseBtn');
+        if (pinCloseBtn) pinCloseBtn.addEventListener('click', () => this.closePinPrompt());
+        const pinSubmitBtn = document.getElementById('settingsPinSubmitBtn');
+        if (pinSubmitBtn) pinSubmitBtn.addEventListener('click', () => this.verifyPin());
+        const pinInput = document.getElementById('settingsPinInput');
+        if (pinInput) pinInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.verifyPin();
+        });
 
         // AI backend radio buttons (None / Ollama / Letta)
         const radios = document.querySelectorAll('input[name="aiBackend"]');
@@ -212,6 +222,47 @@ class SettingsManager {
         if (aiIndicator) {
             var aiAvailable = this.ollamaCoach.available || (this.lettaAgent && this.lettaAgent.available);
             aiIndicator.style.display = aiAvailable ? '' : 'none';
+        }
+    }
+
+    showPinPrompt() {
+        const panel = document.getElementById('settingsPanel');
+        if (panel && panel.classList.contains('visible')) {
+            this.closePanel();
+            return;
+        }
+        const overlay = document.getElementById('settingsPinOverlay');
+        const pinInput = document.getElementById('settingsPinInput');
+        const pinError = document.getElementById('settingsPinError');
+        if (overlay) overlay.classList.add('visible');
+        if (pinInput) { pinInput.value = ''; pinInput.focus(); }
+        if (pinError) pinError.textContent = '';
+    }
+
+    closePinPrompt() {
+        const overlay = document.getElementById('settingsPinOverlay');
+        if (overlay) overlay.classList.remove('visible');
+    }
+
+    verifyPin() {
+        const pinInput = document.getElementById('settingsPinInput');
+        const pinError = document.getElementById('settingsPinError');
+        if (!pinInput) return;
+        if (pinInput.value === 'admin123') {
+            this.closePinPrompt();
+            this.openPanel();
+        } else {
+            if (pinError) pinError.textContent = '❌ Incorrect PIN';
+            pinInput.value = '';
+            pinInput.focus();
+        }
+    }
+
+    openPanel() {
+        const panel = document.getElementById('settingsPanel');
+        if (panel) {
+            panel.classList.add('visible');
+            this.updateServiceStatus();
         }
     }
 

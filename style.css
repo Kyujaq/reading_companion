@@ -1025,6 +1025,82 @@ h2 {
     line-height: 1.5;
 }
 
+.instruction-letter-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: 48px;
+    padding: 8px 0;
+}
+
+.letter-feedback-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 1.3em;
+    font-weight: bold;
+    transition: opacity 0.4s, transform 0.3s;
+}
+
+.letter-feedback-item.letter-correct {
+    background: #d3f9d8;
+    color: #2b8a3e;
+    border: 2px solid #51cf66;
+    animation: popIn 0.3s ease;
+}
+
+.letter-feedback-item.letter-wrong {
+    background: #ffe3e3;
+    color: #c92a2a;
+    border: 2px solid #ff6b6b;
+    position: relative;
+    animation: shake 0.4s ease;
+}
+
+.letter-feedback-item.letter-wrong::after {
+    content: '\2716';
+    position: absolute;
+    font-size: 1.5em;
+    color: #c92a2a;
+    opacity: 0.7;
+}
+
+.letter-feedback-item.letter-fade-out {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+.instruction-feedback-msg {
+    text-align: center;
+    font-size: 0.95em;
+    min-height: 1.4em;
+    margin: 4px 0;
+    transition: color 0.3s;
+}
+
+.instruction-feedback-msg.feedback-error {
+    color: #e03131;
+    font-weight: 500;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.3); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
 .instruction-complete-icon {
     font-size: 3em;
     text-align: center;
@@ -1277,6 +1353,67 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+/* ── Settings PIN Overlay ───────────────────────────────────────────────────── */
+.settings-pin-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1002;
+    justify-content: center;
+    align-items: center;
+}
+
+.settings-pin-overlay.visible {
+    display: flex;
+}
+
+.settings-pin-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 32px 28px;
+    text-align: center;
+    position: relative;
+    min-width: 260px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.settings-pin-title {
+    font-size: 2em;
+    margin-bottom: 8px;
+}
+
+.settings-pin-subtitle {
+    color: #555;
+    margin-bottom: 16px;
+    font-size: 0.95em;
+}
+
+.settings-pin-input {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1.1em;
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+.settings-pin-input:focus {
+    outline: none;
+    border-color: #764ba2;
+}
+
+.settings-pin-error {
+    color: #e03131;
+    font-size: 0.9em;
+    min-height: 1.3em;
+    margin-top: 8px;
 }
 
 /* ── Settings Panel ────────────────────────────────────────────────────────── */

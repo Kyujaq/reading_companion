@@ -216,6 +216,7 @@ class InstructionSession {
 
         updateInstructionProgress(this.stepIds.indexOf(this.currentStepId), this.stepIds.length);
         highlightExpectedKey(step.expected || null);
+        clearLetterFeedback();
 
         if (step.type === 'narrate') {
             this.feedback.speak(step.tts, () => {
@@ -261,12 +262,20 @@ class InstructionSession {
             language: this.lesson.language
         };
 
+        const isFr = this.lesson.language === 'fr';
+
+        // Show pressed letter in the visual bar
+        showLetterFeedback(received, correct, expected, isFr);
+
         if (correct) {
             this.feedback.speakWithOllama(step.successTts, { ...context, correct: true }, () => {
                 if (step.next) this._goTo(step.next);
             });
         } else {
-            this.feedback.speakWithOllama(step.failTts, { ...context, correct: false }, null);
+            const failMsg = isFr
+                ? `C'était la lettre ${received.toUpperCase()}, essaie encore, appuie sur la lettre ${expected.toUpperCase()}`
+                : `That was the letter ${received.toUpperCase()}, try again, press the letter ${expected.toUpperCase()}`;
+            this.feedback.speakWithOllama(failMsg, { ...context, correct: false }, null);
         }
     }
 }
@@ -318,6 +327,43 @@ function makeLessonFromWord(word, language) {
         title: isFr ? `Épelle ${word.toUpperCase()}` : `Spell ${word.toUpperCase()}`,
         steps
     };
+}
+
+function showLetterFeedback(letter, correct, expected, isFr) {
+    const bar = document.getElementById('instructionLetterBar');
+    const msg = document.getElementById('instructionFeedbackMsg');
+    if (!bar) return;
+
+    const span = document.createElement('span');
+    span.className = 'letter-feedback-item';
+    span.textContent = letter.toUpperCase();
+
+    if (correct) {
+        span.classList.add('letter-correct');
+        if (msg) msg.textContent = '';
+    } else {
+        span.classList.add('letter-wrong');
+        // Show red X overlay then remove after animation
+        setTimeout(() => {
+            span.classList.add('letter-fade-out');
+            setTimeout(() => span.remove(), 400);
+        }, 800);
+        if (msg) {
+            msg.textContent = isFr
+                ? `C'était la lettre ${letter.toUpperCase()}, essaie encore, appuie sur la lettre ${expected.toUpperCase()}`
+                : `That was the letter ${letter.toUpperCase()}, try again, press the letter ${expected.toUpperCase()}`;
+            msg.className = 'instruction-feedback-msg feedback-error';
+        }
+    }
+
+    bar.appendChild(span);
+}
+
+function clearLetterFeedback() {
+    const bar = document.getElementById('instructionLetterBar');
+    const msg = document.getElementById('instructionFeedbackMsg');
+    if (bar) bar.innerHTML = '';
+    if (msg) { msg.textContent = ''; msg.className = 'instruction-feedback-msg'; }
 }
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
