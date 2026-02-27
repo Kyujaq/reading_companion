@@ -570,6 +570,12 @@ class ReadingCompanion {
     handleConsonantClick(consonant) {
         // Special case: Q writes "Qu" in the box but still shows Q on button
         const boxText = (consonant.toLowerCase() === 'q') ? 'Qu' : consonant;
+        this.consonantBox = boxText;
+        this.updateBuilderBoxes();
+        // Wait for the consonant sound to finish before checking for complete syllable
+        this.playSound(consonant, () => {
+            this.checkAndCompleteSyllable();
+        });
         this.handleLetterClick(boxText);
     }
     
@@ -589,6 +595,10 @@ class ReadingCompanion {
         }
         
         this.updateBuilderBoxes();
+        // Wait for the vowel sound to finish before checking for complete syllable
+        this.playSound(vowel, () => {
+            this.checkAndCompleteSyllable();
+        });
         // Capture the promise returned by playSound
         const soundPromise = this.playSound(letter);
         this.checkAndCompleteSyllable(soundPromise);
@@ -625,11 +635,17 @@ class ReadingCompanion {
         if (this.firstBox && this.secondBox) {
             const syllable = this.firstBox + this.secondBox;
             
-            // Ensure we have a valid promise before proceeding
-            if (!letterSoundPromise || typeof letterSoundPromise.then !== 'function') {
-                console.warn('Invalid promise passed to checkAndCompleteSyllable');
-                return;
-            }
+
+            // Read the syllable (not spell it) - with a short timeout
+            // If audio takes too long, we'll move to history anyway
+            const timeoutId = setTimeout(() => {
+                // Fallback: if audio hasn't completed in 2 seconds, proceed anyway
+                this.syllableHistory.push(syllable);
+                this.consonantBox = '';
+                this.vowelBox = '';
+                this.updateBuilderBoxes();
+                this.updateHistoryDisplay();
+            }, 2000);
             
             // Wait for the letter sound to complete before playing the syllable
             // Use the passed promise which represents the sound that was just played
