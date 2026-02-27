@@ -12,19 +12,22 @@ class ReadingCompanion {
         this.audioContext = null;
         
         // New state for syllable builder
-        this.consonantBox = '';
-        this.vowelBox = '';
+        this.firstBox = '';
+        this.secondBox = '';
         this.syllableHistory = [];
+        
+        // Track currently playing sounds to prevent overlap
+        this.currentSoundPromise = Promise.resolve();
         
         // Define vowels for both languages
         this.vowels = {
             en: ['a', 'e', 'i', 'o', 'u'],
-            fr: ['a', 'e', 'i', 'o', 'u', 'y', 'à', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'ï', 'î', 'ô', 'ù', 'û', 'ü', 'ÿ', 'æ', 'œ']
+            fr: ['a', 'e', 'i', 'o', 'u', 'y', 'é', 'è', 'ê']
         };
         
         // Define complex vowel sounds (digraphs and special combinations)
         this.complexVowels = {
-            fr: ['ou', 'où', 'oû', 'au', 'eau', 'ai', 'ei', 'oi', 'oe', 'œ', 'an', 'am', 'en', 'em', 'in', 'im', 'ain', 'ein', 'un', 'on', 'yn', 'ym', 'io', 'ien', 'ienne', 'er', 'et', 'ez'],
+            fr: ['ou', 'au', 'ai', 'oi', 'an', 'en', 'in', 'ain', 'un', 'on', 'io', 'ien', 'ienne', 'er', 'et', 'ez'],
             en: ['ou', 'au', 'ai', 'ei', 'oi', 'oo', 'ee', 'ea']
         };
         
@@ -74,35 +77,17 @@ class ReadingCompanion {
             'x': ['s sound.wav'],
             // Special characters
             'ç': ['s sound.wav'], // c with cedilla sounds like s
-            'æ': ['e.wav'], // ae ligature sounds like e
-            // Accented vowels
-            'à': ['a.wav'],
-            'â': ['a.wav'],
-            'ä': ['a.wav'],
+            // Accented vowels (only é, è, ê kept)
             'é': ['é.wav'],
             'è': ['è.wav'],
             'ê': ['ê.wav'],
-            'ë': ['ë.wav'],
-            'ï': ['i.wav'],
-            'î': ['i.wav'],
-            'ô': ['ô.wav'],
-            'ù': ['u.wav'],
-            'û': ['u.wav'],
-            'ü': ['u.wav'],
-            'ÿ': ['y.wav'],
             // Digraphs and syllables
             'ch': ['ch.wav'],
             'gn': ['gn.wav'],
             'ai': ['ai.wav'],
             'au': ['au.wav'],
-            'eau': ['eau.wav'],
-            'ei': ['ei.wav'],
             'oi': ['oi.wav'],
             'ou': ['ou.wav'],
-            'où': ['où.wav'],
-            'oû': ['oû.wav'],
-            'oe': ['oe.wav'],
-            'œ': ['oe.wav'],
             'er': ['er.wav'],
             'et': ['et.wav'],
             'ez': ['ez.wav'],
@@ -115,6 +100,7 @@ class ReadingCompanion {
             'im': ['in.wav'], // same sound as in
             'ain': ['ain.wav'],
             'ein': ['ain.wav'], // same sound as ain
+            'eau': ['au.wav'], // same sound as au
             'un': ['un.wav'],
             'on': ['on.wav'],
             'yn': ['in.wav'], // same as in
@@ -289,9 +275,9 @@ class ReadingCompanion {
                 voiceLang: 'en-US'
             },
             fr: {
-                letters: 'abcdefghijklmnopqrstuvwxyzàâäéèêëïîôùûüÿæœç'.split(''),
+                letters: 'abcdefghijklmnopqrstuvwxyzéèêç'.split(''),
                 syllables: [
-                    // Common consonant-vowel syllables
+                    // Common consonant-vowel syllables only (no complex sounds/digraphs)
                     'ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ce', 'ci', 'co', 'cu',
                     'da', 'de', 'di', 'do', 'du', 'fa', 'fe', 'fi', 'fo', 'fu',
                     'ga', 'ge', 'gi', 'go', 'gu', 'ha', 'he', 'hi', 'ho', 'hu',
@@ -300,15 +286,7 @@ class ReadingCompanion {
                     'pa', 'pe', 'pi', 'po', 'pu', 'ra', 're', 'ri', 'ro', 'ru',
                     'sa', 'se', 'si', 'so', 'su', 'ta', 'te', 'ti', 'to', 'tu',
                     'va', 've', 'vi', 'vo', 'vu', 'wa', 'we', 'wi', 'wo', 'wu',
-                    'za', 'ze', 'zi', 'zo', 'zu',
-                    // Digraphs
-                    'ch', 'gn',
-                    // Vowel combinations
-                    'ai', 'au', 'eau', 'ei', 'oi', 'ou', 'oe',
-                    // Nasal vowels (combined similar sounds)
-                    'an', 'en', 'in', 'ain', 'on', 'un',
-                    // Special combinations
-                    'er', 'et', 'ez', 'io', 'ien', 'ienne'
+                    'za', 'ze', 'zi', 'zo', 'zu'
                 ],
                 words: ['chat', 'chien', 'maison', 'soleil', 'lune', 'étoile', 'arbre',
                        'livre', 'stylo', 'tasse', 'balle', 'poisson', 'oiseau', 'main',
@@ -469,40 +447,58 @@ class ReadingCompanion {
         this.playSound(consonant, () => {
             this.checkAndCompleteSyllable();
         });
+        this.handleLetterClick(boxText);
     }
     
     handleVowelClick(vowel) {
-        this.vowelBox = vowel;
+        this.handleLetterClick(vowel);
+    }
+    
+    handleLetterClick(letter) {
+        // Put letter in first empty box
+        if (!this.firstBox) {
+            this.firstBox = letter;
+        } else if (!this.secondBox) {
+            this.secondBox = letter;
+        } else {
+            // Both boxes are full, do nothing (or could auto-clear and start over)
+            return;
+        }
+        
         this.updateBuilderBoxes();
         // Wait for the vowel sound to finish before checking for complete syllable
         this.playSound(vowel, () => {
             this.checkAndCompleteSyllable();
         });
+        // Capture the promise returned by playSound
+        const soundPromise = this.playSound(letter);
+        this.checkAndCompleteSyllable(soundPromise);
     }
     
     updateBuilderBoxes() {
-        const consonantBoxEl = document.getElementById('consonantBox');
-        const vowelBoxEl = document.getElementById('vowelBox');
+        const firstBoxEl = document.getElementById('consonantBox');
+        const secondBoxEl = document.getElementById('vowelBox');
         
-        consonantBoxEl.textContent = this.consonantBox;
-        vowelBoxEl.textContent = this.vowelBox;
+        firstBoxEl.textContent = this.firstBox;
+        secondBoxEl.textContent = this.secondBox;
         
         // Add filled class for animation
-        if (this.consonantBox) {
-            consonantBoxEl.classList.add('filled');
-            setTimeout(() => consonantBoxEl.classList.remove('filled'), 300);
+        if (this.firstBox) {
+            firstBoxEl.classList.add('filled');
+            setTimeout(() => firstBoxEl.classList.remove('filled'), 300);
         }
-        if (this.vowelBox) {
-            vowelBoxEl.classList.add('filled');
-            setTimeout(() => vowelBoxEl.classList.remove('filled'), 300);
+        if (this.secondBox) {
+            secondBoxEl.classList.add('filled');
+            setTimeout(() => secondBoxEl.classList.remove('filled'), 300);
         }
     }
     
-    checkAndCompleteSyllable() {
+    checkAndCompleteSyllable(letterSoundPromise) {
         // If both boxes are filled, read the syllable and move to history
-        if (this.consonantBox && this.vowelBox) {
-            const syllable = this.consonantBox + this.vowelBox;
+        if (this.firstBox && this.secondBox) {
+            const syllable = this.firstBox + this.secondBox;
             
+
             // Read the syllable (not spell it) - with a short timeout
             // If audio takes too long, we'll move to history anyway
             const timeoutId = setTimeout(() => {
@@ -523,6 +519,7 @@ class ReadingCompanion {
                 this.vowelBox = '';
                 this.updateBuilderBoxes();
                 this.updateHistoryDisplay();
+
             });
         }
     }
@@ -545,8 +542,8 @@ class ReadingCompanion {
     }
     
     clearSyllableBuilder() {
-        this.consonantBox = '';
-        this.vowelBox = '';
+        this.firstBox = '';
+        this.secondBox = '';
         this.syllableHistory = [];
         this.updateBuilderBoxes();
         this.updateHistoryDisplay();
@@ -564,7 +561,6 @@ class ReadingCompanion {
             btn.textContent = syllable;
             
             btn.addEventListener('click', () => {
-                this.addToAssembly(syllable);
                 this.playSound(syllable);
             });
             
@@ -723,13 +719,49 @@ class ReadingCompanion {
     }
 
     playSound(text, callback) {
-        // For French, use audio files instead of TTS
-        if (this.currentLanguage === 'fr') {
-            this.playFrenchAudio(text, callback);
-        } else {
-            // Use TTS for English
-            this.playTTS(text, callback);
-        }
+        // Create a new promise that wraps the audio playback with timeout
+        const soundPromise = new Promise((resolve, reject) => {
+            let completed = false;
+            
+            const wrappedCallback = () => {
+                if (!completed) {
+                    completed = true;
+                    if (callback) callback();
+                    resolve();
+                }
+            };
+            
+            // Timeout fallback to prevent hanging (5 seconds should be enough for any sound)
+            const timeoutId = setTimeout(() => {
+                if (!completed) {
+                    console.warn('Sound playback timed out for:', text);
+                    wrappedCallback();
+                }
+            }, 5000);
+            
+            // For French, use audio files instead of TTS
+            if (this.currentLanguage === 'fr') {
+                this.playFrenchAudio(text, () => {
+                    clearTimeout(timeoutId);
+                    wrappedCallback();
+                });
+            } else {
+                // Use TTS for English
+                this.playTTS(text, () => {
+                    clearTimeout(timeoutId);
+                    wrappedCallback();
+                });
+            }
+        }).catch((error) => {
+            // Ensure we don't hang on errors
+            console.error('Error playing sound:', error);
+            if (callback) callback();
+        });
+        
+        // Chain the promise to ensure sounds play in sequence, not simultaneously
+        this.currentSoundPromise = this.currentSoundPromise.then(() => soundPromise).catch(() => soundPromise);
+        
+        return this.currentSoundPromise;
     }
 
     async playFrenchAudio(text, callback) {
@@ -830,6 +862,7 @@ class ReadingCompanion {
         
         if (callback) {
             utterance.onend = callback;
+            utterance.onerror = callback; // Ensure callback is called even on error
         }
         
         this.synth.speak(utterance);
