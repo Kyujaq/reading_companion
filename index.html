@@ -157,6 +157,7 @@
                 <select id="lessonSelect" class="lesson-select"></select>
                 <button id="instructionStartBtn" class="btn-instruction-start">&#9654; Start Lesson</button>
                 <button id="lessonBuilderOpenBtn" class="btn-builder-open">➕ Create Lesson</button>
+                <button id="practiceWeakSpotsBtn" class="btn-weak-spots" style="display:none">🔄 Practice Weak Spots</button>
             </div>
 
             <div id="instructionSessionPanel" style="display:none">
@@ -212,6 +213,11 @@
                 <p class="progress-empty">No lessons completed yet. Start a lesson to earn stars!</p>
             </div>
             <button id="progressClearBtn" class="btn-progress-clear" type="button">🗑️ Clear History</button>
+
+            <h3 class="settings-services-title">🔄 Weak Spots</h3>
+            <div id="weakSpotsDisplay" class="weak-spots-display">
+                <span class="weak-spots-empty">No weak spots yet — keep practicing!</span>
+            </div>
 
             <h3 class="settings-services-title">Service Status</h3>
             <table class="settings-services-table">
@@ -274,6 +280,7 @@
 
     <script src="script.js?v=4"></script>
     <script src="progress-tracker.js"></script>
+    <script src="spaced-repetition.js"></script>
     <script src="instruction-mode.js"></script>
     <script src="lesson-builder.js"></script>
     <script src="gallery.js"></script>
@@ -295,7 +302,10 @@
         window.lessonBuilder = new LessonBuilder(app);
         window.lessonBuilder.init();
 
-        // Wire progress tracking into lesson completion
+        // Spaced Repetition
+        window.spacedRepetition = new SpacedRepetitionTracker();
+
+        // Wire progress + spaced repetition into lesson completion
         var origOnComplete = window.instructionModeManager._onLessonComplete.bind(window.instructionModeManager);
         window.instructionModeManager._onLessonComplete = function(report) {
             var lesson = window.instructionModeManager.session
@@ -304,16 +314,72 @@
             if (lesson) {
                 window.progressTracker.saveSession(report, lesson);
             }
+            window.spacedRepetition.updateWeakSpotsDisplay();
+            _updatePracticeBtn();
         };
 
-        // Clear history button
+        // Patch InstructionSession.handleInput to track letter attempts
+        var origHandleInput = InstructionSession.prototype.handleInput;
+        InstructionSession.prototype.handleInput = function(input) {
+            var step = this.currentStep;
+            if (step && step.type === 'prompt' && step.expected) {
+                var expected = step.expected.toLowerCase();
+                var received = input.toLowerCase();
+                window.spacedRepetition.recordAttempt(expected, received === expected);
+            }
+            origHandleInput.call(this, input);
+        };
+
+        // Clear history button (clears both progress and spaced repetition)
         var clearBtn = document.getElementById('progressClearBtn');
         if (clearBtn) clearBtn.addEventListener('click', function() {
             window.progressTracker.clearHistory();
+            window.spacedRepetition.clearData();
         });
+
+        // Practice Weak Spots button
+        var practiceBtn = document.getElementById('practiceWeakSpotsBtn');
+        function _updatePracticeBtn() {
+            if (!practiceBtn) return;
+            var hasWeakSpots = window.spacedRepetition.getStrugglingLetters(1).length > 0;
+            practiceBtn.style.display = hasWeakSpots ? '' : 'none';
+        }
+        if (practiceBtn) {
+            practiceBtn.addEventListener('click', function() {
+                var lang = app.currentLanguage;
+                var lesson = window.spacedRepetition.buildPracticeLesson(lang);
+                if (lesson) {
+                    window.instructionModeManager.startLesson(lesson);
+                }
+            });
+        }
+        _updatePracticeBtn();
+
+        // Inject struggled-letter suggestions into guided examples
+        var origShowGuided = app.showGuidedExample.bind(app);
+        app.showGuidedExample = function() {
+            // ~30% chance to suggest a struggled syllable instead
+            if (Math.random() < 0.3) {
+                var suggestion = window.spacedRepetition.getSuggestedSyllable(app.currentLanguage);
+                if (suggestion) {
+                    var el = document.getElementById('guidedExample');
+                    var isFr = app.currentLanguage === 'fr';
+                    var text = isFr
+                        ? '🔄 Révise : ' + suggestion.consonant + ' + ' + suggestion.vowel + ' = ' + suggestion.syllable
+                        : '🔄 Review: ' + suggestion.consonant + ' + ' + suggestion.vowel + ' = ' + suggestion.syllable;
+                    el.textContent = text;
+                    el.style.animation = 'none';
+                    void el.offsetHeight;
+                    el.style.animation = 'fadeInExample 0.5s ease-in';
+                    return;
+                }
+            }
+            origShowGuided();
+        };
 
         // Initial display
         window.progressTracker.updateDisplay();
+        window.spacedRepetition.updateWeakSpotsDisplay();
 
         // Gallery
         window.galleryManager = new GalleryManager(app);
